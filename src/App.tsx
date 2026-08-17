@@ -13,7 +13,7 @@ function App() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
-
+  
   const [apiQuestions, setApiQuestions] = useState<Question[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -36,30 +36,53 @@ function App() {
             Authorization: `Bearer ${token}`
           }
         });
-
+        
         const resData = await response.json();
-
+        
         let fetched: any[] = [];
-        if (Array.isArray(resData)) fetched = resData;
-        else if (resData && Array.isArray(resData.data)) fetched = resData.data;
-        else if (resData && Array.isArray(resData.questions)) fetched = resData.questions;
+        // Support { data: { questions: [] } } structure
+        if (resData && resData.data && Array.isArray(resData.data.questions)) {
+            fetched = resData.data.questions;
+        } else if (Array.isArray(resData)) {
+            fetched = resData;
+        } else if (resData && Array.isArray(resData.data)) {
+            fetched = resData.data;
+        } else if (resData && Array.isArray(resData.questions)) {
+            fetched = resData.questions;
+        }
 
         if (fetched.length > 0) {
           const mapped = fetched.map((q: any, idx: number) => {
-            // Flexible mapping based on common API structures
-            const word = q.word || q.correctAnswer || q.text || q.question || 'Word';
-            let distractors = q.distractors || q.wrongAnswers;
-
-            if (!distractors && q.options) {
-              distractors = q.options.filter((o: any) => o !== word);
+            const word = q.correctAnswer || q.word || q.text || 'Word';
+            const questionText = q.question || '';
+            
+            let distractors: string[] = [];
+            
+            if (Array.isArray(q.options)) {
+                distractors = q.options.map((o: any) => typeof o === 'string' ? o : o.text || '').filter((t: string) => t !== word && t !== '');
+            } else if (typeof q.options === 'string') {
+                try {
+                    const parsed = JSON.parse(q.options);
+                    if (Array.isArray(parsed)) {
+                        distractors = parsed.filter((t: string) => t !== word);
+                    }
+                } catch (e) {
+                    console.error("Failed to parse options string", e);
+                }
             }
+
+            // Fill missing distractors if there are less than 3
             if (!distractors || distractors.length < 3) {
-              distractors = ['خيار 1', 'خيار 2', 'خيار 3']; // fallback arabic distractors
+               const placeholders = ['خيار أ', 'خيار ب', 'خيار ج'];
+               while (distractors.length < 3) distractors.push(placeholders[distractors.length]);
             }
-
+            // Keep exactly 3 distractors so total words is 4
+            distractors = distractors.slice(0, 3);
+            
             return {
               id: q.id || idx,
-              image: q.image || q.imageUrl || '',
+              questionText: questionText,
+              image: q.imageUrl || q.image || null,
               word: word,
               distractors: distractors
             };
@@ -88,7 +111,7 @@ function App() {
 
   const handleCorrectAnswer = () => {
     setScore((prev) => prev + 100);
-
+    
     // Check if there are more questions
     if (currentQuestionIndex + 1 < apiQuestions.length) {
       setCurrentQuestionIndex((prev) => prev + 1);
@@ -125,7 +148,7 @@ function App() {
       {view === 'welcome' && (
         <WelcomeScreen onStart={handleStartGame} />
       )}
-
+      
       {view === 'playing' && (
         <GameScreen
           questions={apiQuestions}

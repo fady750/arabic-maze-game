@@ -122,14 +122,25 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         
         {/* Left Side: Question Display */}
         <div className="glass-panel w-fit h-auto p-2 sm:p-3 lg:h-full lg:max-h-full lg:p-6 text-center flex flex-col items-center justify-center min-h-0 flex-shrink-0">
-          {/* Question Image */}
+          {/* Question Text and/or Image */}
           {currentQuestion && (
-            <div className="relative group overflow-hidden rounded-2xl border-2 border-[#00f0ff] bg-slate-900 pulse-glow-cyan w-32 h-32 sm:w-48 sm:h-48 lg:w-auto lg:h-full lg:max-h-full lg:aspect-square flex items-center justify-center p-2">
-              <img
-                src={currentQuestion.image}
-                alt="سؤال المتاهة"
-                className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
-              />
+            <div className="relative group overflow-hidden rounded-2xl border-2 border-[#00f0ff] bg-slate-900 pulse-glow-cyan w-48 h-48 sm:w-64 sm:h-64 lg:w-80 lg:h-full lg:max-h-full lg:aspect-square flex flex-col items-center justify-center p-4">
+              {currentQuestion.image ? (
+                <>
+                    <img
+                        src={currentQuestion.image}
+                        alt="سؤال المتاهة"
+                        className="w-full h-1/2 object-contain transition-transform duration-500 group-hover:scale-105 mb-4"
+                    />
+                    <div className="text-xl lg:text-3xl text-white font-bold text-center leading-relaxed drop-shadow-md">
+                        {currentQuestion.questionText}
+                    </div>
+                </>
+              ) : (
+                <div className="text-2xl lg:text-4xl text-white font-black text-center leading-relaxed drop-shadow-lg p-4">
+                    {currentQuestion.questionText}
+                </div>
+              )}
             </div>
           )}
         </div>
