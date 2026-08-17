@@ -3,7 +3,7 @@ import { WelcomeScreen } from './components/WelcomeScreen';
 import { GameScreen } from './components/GameScreen';
 import { GameOverModal } from './components/GameOverModal';
 import { VictoryModal } from './components/VictoryModal';
-import { QUESTIONS, Question } from './data/questions';
+import { QUESTIONS, type Question } from './data/questions';
 import { gameAudio } from './utils/audio';
 
 type ViewType = 'welcome' | 'playing' | 'gameover' | 'victory';
@@ -13,7 +13,7 @@ function App() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
-  
+
   const [apiQuestions, setApiQuestions] = useState<Question[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -36,9 +36,9 @@ function App() {
             Authorization: `Bearer ${token}`
           }
         });
-        
+
         const resData = await response.json();
-        
+
         let fetched: any[] = [];
         if (Array.isArray(resData)) fetched = resData;
         else if (resData && Array.isArray(resData.data)) fetched = resData.data;
@@ -49,14 +49,14 @@ function App() {
             // Flexible mapping based on common API structures
             const word = q.word || q.correctAnswer || q.text || q.question || 'Word';
             let distractors = q.distractors || q.wrongAnswers;
-            
+
             if (!distractors && q.options) {
-               distractors = q.options.filter((o: any) => o !== word);
+              distractors = q.options.filter((o: any) => o !== word);
             }
             if (!distractors || distractors.length < 3) {
-               distractors = ['خيار 1', 'خيار 2', 'خيار 3']; // fallback arabic distractors
+              distractors = ['خيار 1', 'خيار 2', 'خيار 3']; // fallback arabic distractors
             }
-            
+
             return {
               id: q.id || idx,
               image: q.image || q.imageUrl || '',
@@ -88,7 +88,7 @@ function App() {
 
   const handleCorrectAnswer = () => {
     setScore((prev) => prev + 100);
-    
+
     // Check if there are more questions
     if (currentQuestionIndex + 1 < apiQuestions.length) {
       setCurrentQuestionIndex((prev) => prev + 1);
@@ -125,7 +125,7 @@ function App() {
       {view === 'welcome' && (
         <WelcomeScreen onStart={handleStartGame} />
       )}
-      
+
       {view === 'playing' && (
         <GameScreen
           questions={apiQuestions}

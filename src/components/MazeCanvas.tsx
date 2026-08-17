@@ -35,10 +35,10 @@ const ROOMS = [
 
 // 4 Portals — one per answer room, cycling: TL → TR → BR → BL → TL
 const PORTALS = [
-  { id: 0, x: 2, y: 0,  targetPortalId: 1, color: '#39ff14', exitX: 2,  exitY: 1,  exitDir: 'down'  }, // TL top wall
-  { id: 1, x: 18, y: 2, targetPortalId: 2, color: '#bd00ff', exitX: 17, exitY: 2,  exitDir: 'left'  }, // TR right wall
-  { id: 2, x: 16, y: 18, targetPortalId: 3, color: '#ff007f', exitX: 16, exitY: 17, exitDir: 'up'    }, // BR bottom wall
-  { id: 3, x: 0, y: 16, targetPortalId: 0, color: '#ff5f00', exitX: 1,  exitY: 16, exitDir: 'right' }, // BL left wall
+  { id: 0, x: 2, y: 0, targetPortalId: 1, color: '#39ff14', exitX: 2, exitY: 1, exitDir: 'down' }, // TL top wall
+  { id: 1, x: 18, y: 2, targetPortalId: 2, color: '#bd00ff', exitX: 17, exitY: 2, exitDir: 'left' }, // TR right wall
+  { id: 2, x: 16, y: 18, targetPortalId: 3, color: '#ff007f', exitX: 16, exitY: 17, exitDir: 'up' }, // BR bottom wall
+  { id: 3, x: 0, y: 16, targetPortalId: 0, color: '#ff5f00', exitX: 1, exitY: 16, exitDir: 'right' }, // BL left wall
 ];
 
 interface Monster {
@@ -133,10 +133,10 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
     const touch = e.touches[0];
     const rect = containerRef.current?.getBoundingClientRect();
     if (!rect) return;
-    
+
     const x = touch.clientX - rect.left;
     const y = touch.clientY - rect.top;
-    
+
     joystickStartRef.current = { x, y };
     setJoystick({
       startX: x,
@@ -152,12 +152,12 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
     const touch = e.touches[0];
     const rect = containerRef.current?.getBoundingClientRect();
     if (!rect) return;
-    
+
     const x = touch.clientX - rect.left;
     const y = touch.clientY - rect.top;
-    
+
     const start = joystickStartRef.current;
-    
+
     setJoystick({
       startX: start.x,
       startY: start.y,
@@ -168,7 +168,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
     const dx = x - start.x;
     const dy = y - start.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
-    
+
     if (distance > 15) {
       if (Math.abs(dx) > Math.abs(dy)) {
         touchDirectionRef.current = dx > 0 ? 'right' : 'left';
@@ -190,10 +190,10 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
     if (isPaused || lives <= 0) return;
     const rect = containerRef.current?.getBoundingClientRect();
     if (!rect) return;
-    
+
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    
+
     joystickStartRef.current = { x, y };
     setJoystick({
       startX: x,
@@ -208,12 +208,12 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
     if (!joystickStartRef.current || isPaused || lives <= 0) return;
     const rect = containerRef.current?.getBoundingClientRect();
     if (!rect) return;
-    
+
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    
+
     const start = joystickStartRef.current;
-    
+
     setJoystick({
       startX: start.x,
       startY: start.y,
@@ -224,7 +224,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
     const dx = x - start.x;
     const dy = y - start.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
-    
+
     if (distance > 15) {
       if (Math.abs(dx) > Math.abs(dy)) {
         touchDirectionRef.current = dx > 0 ? 'right' : 'left';
@@ -593,7 +593,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
           if (dist < 20) {
             gameAudio.playHit();
             onLoseLife();
-            
+
             // Flash and reset positions
             player.invincibleFrames = 120;
             player.x = 9 * cellSize + cellSize / 2;
@@ -681,7 +681,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       ROOMS.forEach((room) => {
         ctx.fillStyle = room.glow;
         ctx.fillRect((room.x - 1) * cellSize, (room.y - 1) * cellSize, cellSize * 3, cellSize * 3);
-        
+
         // Neon Room Borders
         ctx.strokeStyle = room.color;
         ctx.lineWidth = 2;
@@ -825,18 +825,18 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       if (teleportEffectRef.current) {
         const { fromX, fromY, toX, toY, progress, maxFrames, color } = teleportEffectRef.current;
         const ratio = progress / maxFrames;
-        
+
         ctx.save();
         ctx.strokeStyle = color;
         ctx.lineWidth = 4 * (1 - ratio);
         ctx.shadowColor = color;
         ctx.shadowBlur = 15;
-        
+
         ctx.beginPath();
         ctx.moveTo(fromX, fromY);
         ctx.lineTo(toX, toY);
         ctx.stroke();
-        
+
         // Glowing particles
         ctx.fillStyle = '#ffffff';
         const numParticles = 8;
@@ -919,14 +919,14 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         ctx.beginPath();
         ctx.arc(mx, my - 2, 10, Math.PI, 0, false); // top dome
         ctx.lineTo(mx + 10, my + 10);
-        
+
         // Wavy bottom skirt
         ctx.lineTo(mx + 6, my + 7);
         ctx.lineTo(mx + 2, my + 10);
         ctx.lineTo(mx - 2, my + 7);
         ctx.lineTo(mx - 6, my + 10);
         ctx.lineTo(mx - 10, my + 7);
-        
+
         ctx.closePath();
         ctx.fillStyle = monster.color;
         ctx.shadowColor = monster.color;
@@ -1026,7 +1026,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
                 const dist = Math.sqrt(dx * dx + dy * dy);
                 const maxDist = 30;
                 if (dist === 0) return 'translate(0px, 0px)';
-                
+
                 const angle = Math.atan2(dy, dx);
                 const limitDist = Math.min(dist, maxDist);
                 const translateX = Math.cos(angle) * limitDist;
