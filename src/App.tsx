@@ -3,7 +3,7 @@ import { WelcomeScreen } from './components/WelcomeScreen';
 import { GameScreen } from './components/GameScreen';
 import { GameOverModal } from './components/GameOverModal';
 import { VictoryModal } from './components/VictoryModal';
-import { QUESTIONS, type Question } from './data/questions';
+import type { Question } from './data/questions';
 import { gameAudio } from './utils/audio';
 
 type ViewType = 'welcome' | 'playing' | 'gameover' | 'victory';
@@ -16,85 +16,84 @@ function App() {
   
   const [apiQuestions, setApiQuestions] = useState<Question[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
         const urlParams = new URLSearchParams(window.location.search);
-        const lessonId = urlParams.get('lessonId');
+        const assessmentId = urlParams.get('assessmentID') || urlParams.get('assessmentId') || urlParams.get('lessonId');
         const token = urlParams.get('token');
 
-        if (!lessonId || !token) {
-          console.warn("Missing lessonId or token in URL. Using static questions.");
-          setApiQuestions(QUESTIONS);
+        if (!assessmentId || !token) {
+          setError('عذراً، الرابط غير مكتمل. يرجى التأكد من وجود رقم التقييم ورمز المرور.');
           setIsLoading(false);
           return;
         }
 
-        const response = await fetch(`https://learning-platform-1euu.onrender.com/api/v1/student/games/1/questions?lessonId=${lessonId}`, {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'https://oasis-eduline-1.onrender.com';
+        const response = await fetch(`${baseUrl}/api/v1/student/assessments/${assessmentId}/questions/choice`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
         });
+
+        if (!response.ok) {
+           throw new Error('فشل في جلب البيانات من الخادم.');
+        }
         
         const resData = await response.json();
         
         let fetched: any[] = [];
-        // Support { data: { questions: [] } } structure
-        if (resData && resData.data && Array.isArray(resData.data.questions)) {
-            fetched = resData.data.questions;
+        if (resData && resData.data && Array.isArray(resData.data.answers)) {
+            fetched = resData.data.answers;
+        } else if (resData && resData.data && Array.isArray(resData.data)) {
+            fetched = resData.data;
         } else if (Array.isArray(resData)) {
             fetched = resData;
-        } else if (resData && Array.isArray(resData.data)) {
-            fetched = resData.data;
-        } else if (resData && Array.isArray(resData.questions)) {
-            fetched = resData.questions;
         }
 
         if (fetched.length > 0) {
           const mapped = fetched.map((q: any, idx: number) => {
-            const word = q.correctAnswer || q.word || q.text || 'Word';
-            const questionText = q.question || '';
+            // Handle the new answers structure if present
+            const isAnswerFormat = q.questionTitle !== undefined && q.choices !== undefined;
             
+            const questionText = isAnswerFormat ? q.questionTitle : (q.choiceDetails?.title || 'بدون سؤال');
+            const choicesArr = isAnswerFormat ? q.choices : (q.choiceDetails?.choices || []);
+            
+            let word = 'إجابة';
             let distractors: string[] = [];
-            
-            if (Array.isArray(q.options)) {
-                distractors = q.options.map((o: any) => typeof o === 'string' ? o : o.text || '').filter((t: string) => t !== word && t !== '');
-            } else if (typeof q.options === 'string') {
-                try {
-                    const parsed = JSON.parse(q.options);
-                    if (Array.isArray(parsed)) {
-                        distractors = parsed.filter((t: string) => t !== word);
-                    }
-                } catch (e) {
-                    console.error("Failed to parse options string", e);
-                }
+
+            if (isAnswerFormat) {
+              word = q.correctAnswer;
+              distractors = choicesArr
+                .map((c: any) => c.text)
+                .filter((text: string) => text !== word);
+            } else {
+              const details = q.choiceDetails || {};
+              const correctIndex = details.correctAnswer !== undefined ? details.correctAnswer : 0;
+              word = choicesArr[correctIndex] || 'إجابة';
+              distractors = choicesArr.filter((_: any, i: number) => i !== correctIndex);
             }
 
-            // Fill missing distractors if there are less than 3
-            if (!distractors || distractors.length < 3) {
-               const placeholders = ['خيار أ', 'خيار ب', 'خيار ج'];
-               while (distractors.length < 3) distractors.push(placeholders[distractors.length]);
-            }
-            // Keep exactly 3 distractors so total words is 4
+            // Keep maximum of 3 distractors so total words is never more than 4
             distractors = distractors.slice(0, 3);
             
             return {
-              id: q.id || idx,
+              id: q.id || q.questionId || idx,
               questionText: questionText,
-              image: q.imageUrl || q.image || null,
+              image: q.image || q.choiceDetails?.image || null,
               word: word,
               distractors: distractors
             };
           });
           setApiQuestions(mapped);
         } else {
-          console.warn("No questions found from API. Using static questions.");
-          setApiQuestions(QUESTIONS);
+          setError('لا توجد أسئلة متاحة في هذا التقييم.');
         }
       } catch (err) {
         console.error("Error fetching questions:", err);
-        setApiQuestions(QUESTIONS);
+        setError('حدث خطأ أثناء جلب الأسئلة. يرجى المحاولة مرة أخرى.');
       } finally {
         setIsLoading(false);
       }
@@ -135,9 +134,17 @@ function App() {
     });
   };
 
+  if (error) {
+    return (
+      <div className="w-screen min-h-screen bg-slate-900 flex items-center justify-center text-white text-2xl font-bold p-8 text-center" dir="rtl">
+        {error}
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
-      <div className="w-screen min-h-screen bg-slate-900 flex items-center justify-center text-white text-2xl font-bold">
+      <div className="w-screen min-h-screen bg-slate-900 flex items-center justify-center text-white text-2xl font-bold" dir="rtl">
         جاري تحميل اللعبة...
       </div>
     );

@@ -100,44 +100,46 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           {/* Level */}
           <div className="flex flex-col items-end">
             <span className="text-xs text-gray-500 font-bold uppercase tracking-wider">المرحلة</span>
-            <span className="text-xl font-black text-[#00f0ff]">{currentQuestionIndex + 1} / {questions.length}</span>
+            <span className="text-xl font-black text-[#00f0ff]" dir="ltr">{currentQuestionIndex + 1} / {questions.length}</span>
           </div>
 
           {/* Score */}
           <div className="flex flex-col items-end">
             <span className="text-xs text-gray-500 font-bold uppercase tracking-wider">النقاط</span>
-            <span className="text-xl font-black text-[#39ff14]">{score}</span>
+            <span className="text-xl font-black text-[#39ff14]" dir="ltr">{score}</span>
           </div>
 
           {/* Lives */}
           <div className="flex flex-col items-end">
             <span className="text-xs text-gray-500 font-bold uppercase tracking-wider">المحاولات</span>
-            {renderHearts()}
+            <div dir="ltr">{renderHearts()}</div>
           </div>
         </div>
       </div>
 
       {/* 2. Main layout */}
-      <div className="flex-1 w-full min-h-0 flex flex-col lg:flex-row items-center justify-center gap-4 lg:gap-8 overflow-hidden">
+      <div className="flex-1 w-full min-h-0 flex flex-col lg:flex-row items-stretch justify-center gap-6 lg:gap-10 pb-4">
         
-        {/* Left Side: Question Display */}
-        <div className="glass-panel w-fit h-auto p-2 sm:p-3 lg:h-full lg:max-h-full lg:p-6 text-center flex flex-col items-center justify-center min-h-0 flex-shrink-0">
+        {/* Left Side (Actually Right in RTL): Question Display */}
+        <div className="glass-panel w-full lg:w-[320px] p-4 text-center flex flex-col items-center justify-center min-h-0 flex-shrink-0 border border-[#00f0ff]/20 shadow-lg rounded-2xl relative overflow-hidden">
           {/* Question Text and/or Image */}
           {currentQuestion && (
-            <div className="relative group overflow-hidden rounded-2xl border-2 border-[#00f0ff] bg-slate-900 pulse-glow-cyan w-48 h-48 sm:w-64 sm:h-64 lg:w-80 lg:h-full lg:max-h-full lg:aspect-square flex flex-col items-center justify-center p-4">
+            <div className="relative z-10 w-full h-full flex flex-col items-center justify-center p-2">
               {currentQuestion.image ? (
                 <>
-                    <img
-                        src={currentQuestion.image}
-                        alt="سؤال المتاهة"
-                        className="w-full h-1/2 object-contain transition-transform duration-500 group-hover:scale-105 mb-4"
-                    />
-                    <div className="text-xl lg:text-3xl text-white font-bold text-center leading-relaxed drop-shadow-md">
+                    <div className="flex-1 w-full min-h-0 flex items-center justify-center mb-4">
+                      <img
+                          src={currentQuestion.image}
+                          alt="سؤال المتاهة"
+                          className="max-w-full max-h-full object-contain drop-shadow-lg"
+                      />
+                    </div>
+                    <div className="text-xl lg:text-2xl text-white font-black text-center leading-relaxed shrink-0">
                         {currentQuestion.questionText}
                     </div>
                 </>
               ) : (
-                <div className="text-2xl lg:text-4xl text-white font-black text-center leading-relaxed drop-shadow-lg p-4">
+                <div className="text-2xl lg:text-3xl text-white font-black text-center leading-relaxed p-4">
                     {currentQuestion.questionText}
                 </div>
               )}
@@ -146,7 +148,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         </div>
 
         {/* Center: Maze Board */}
-        <div className="relative flex flex-col items-center justify-center w-full max-w-[90vw] aspect-square h-auto lg:h-full lg:max-h-full lg:w-auto flex-shrink-0">
+        <div className="relative flex-1 flex flex-col items-center justify-center w-full h-full min-h-0 min-w-0 flex-shrink-0">
           {/* Toast Notification overlay */}
           {notification && (
             <div
