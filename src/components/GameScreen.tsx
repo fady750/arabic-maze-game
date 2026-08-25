@@ -108,20 +108,20 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   };
 
   return (
-    <div className="w-full max-w-[1400px] mx-auto p-2 sm:p-4 flex flex-col items-center justify-start gap-3 h-auto overflow-y-auto lg:h-screen lg:overflow-hidden">
+    <div className="w-full max-w-[1400px] mx-auto p-2 sm:p-4 flex flex-col items-center justify-start gap-3 h-[100dvh] overflow-hidden">
 
       {/* 1. Header panel */}
       <div className="glass-panel w-full flex items-center justify-between px-6 py-3 relative z-10 flex-shrink-0">
         <button
           onClick={onBackToWelcome}
-          className="flex items-center gap-2 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all"
+          className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
         >
-          <ArrowLeft className="w-4 h-4 ml-1" />
-          الرئيسية
+          <ArrowLeft className="w-6 h-6" />
+          <span className="hidden sm:inline font-bold">خروج</span>
         </button>
 
         {/* HUD Info */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-8">
           {/* Level */}
           <div className="flex flex-col items-end">
             <span className="text-xs text-gray-500 font-bold uppercase tracking-wider">المرحلة</span>
@@ -143,17 +143,17 @@ export const GameScreen: React.FC<GameScreenProps> = ({
       </div>
 
       {/* 2. Main layout */}
-      <div className="flex-1 w-full min-h-0 flex flex-col lg:flex-row items-stretch justify-center gap-6 lg:gap-10 pb-4">
+      <div className="flex-1 w-full min-h-0 flex flex-col md:flex-row items-stretch justify-center gap-4 md:gap-6 lg:gap-10 pb-2 md:pb-4">
 
         {/* Left Side (Actually Right in RTL): Question Display */}
-        <div className="glass-panel w-full lg:w-[320px] p-4 text-center flex flex-col items-center justify-center min-h-0 flex-shrink-0 border border-[#00f0ff]/20 shadow-lg rounded-2xl relative overflow-hidden">
+        <div className="glass-panel w-full md:w-[260px] lg:w-[320px] p-3 md:p-4 text-center flex flex-col items-center justify-center min-h-0 flex-shrink-0 border border-[#00f0ff]/20 shadow-lg rounded-2xl relative overflow-hidden">
           {/* Question Elements (Text, Image, Audio) */}
           {currentQuestion && (
-            <div className="relative z-10 w-full h-full flex flex-col items-center justify-center p-2 gap-3 lg:gap-4">
+            <div className="relative z-10 w-full h-full flex flex-col items-center justify-center p-1 md:p-2 gap-2 md:gap-3 lg:gap-4">
 
               {/* Optional Image */}
               {currentQuestion.image && (
-                <div className="w-full max-h-[20vh] lg:flex-1 lg:max-h-none min-h-0 flex items-center justify-center">
+                <div className="w-full max-h-[15vh] md:flex-1 md:max-h-none min-h-0 flex items-center justify-center">
                   <img
                     src={currentQuestion.image}
                     alt="سؤال المتاهة"
