@@ -108,7 +108,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   };
 
   return (
-    <div className="w-full max-w-[1400px] mx-auto p-2 flex flex-col items-center justify-start gap-2 h-[100dvh] overflow-hidden">
+    <div className="w-full max-w-[1400px] mx-auto p-2 sm:p-4 flex flex-col items-center justify-start gap-3 h-[100dvh] overflow-hidden">
 
       {/* 1. Header panel */}
       <div className="glass-panel w-full flex items-center justify-between px-4 md:px-5 lg:px-6 py-2 lg:py-3 relative z-10 flex-shrink-0">
@@ -143,7 +143,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
       </div>
 
       {/* 2. Main layout: stacked on mobile, side-by-side on md+ */}
-      <div className="flex-1 w-full min-h-0 flex flex-col md:flex-row items-stretch justify-center gap-2 pb-1">
+      <div className="flex-1 w-full min-h-0 flex flex-col md:flex-row items-stretch justify-center gap-2 md:gap-4 lg:gap-10 pb-1">
 
         {/* Left Side: Question Display */}
         <div className="glass-panel w-full md:w-[200px] lg:w-[320px] p-2 lg:p-4 text-center flex flex-col items-center justify-center min-h-0 flex-shrink-0 border border-[#00f0ff]/20 shadow-lg rounded-2xl relative overflow-hidden">
@@ -188,9 +188,9 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                   >
                     <div className={`filter drop-shadow-[0_0_20px_rgba(255,255,255,0.5)] transition-transform ${isPlayingAudio ? 'animate-pulse text-[#39ff14]' : 'text-[#ff007f]'}`}>
                       {isPlayingAudio ? (
-                        <MusicNoteIcon style={{ fontSize: 'clamp(2.5rem, 10vh, 5rem)' }} />
+                        <MusicNoteIcon className="!text-[6rem] lg:!text-[10rem]" />
                       ) : (
-                        <VolumeUpIcon style={{ fontSize: 'clamp(2.5rem, 10vh, 5rem)' }} />
+                        <VolumeUpIcon className="!text-[6rem] lg:!text-[10rem]" />
                       )}
                     </div>
                   </button>
