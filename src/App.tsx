@@ -13,7 +13,7 @@ function App() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
-  
+
   const [apiQuestions, setApiQuestions] = useState<Question[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,53 +32,57 @@ function App() {
         }
 
         const baseUrl = import.meta.env.VITE_API_BASE_URL || 'https://oasis-eduline-1.onrender.com';
-        const response = await fetch(`${baseUrl}/api/v1/student/assessments/${assessmentId}/questions/choice`, {
+        const response = await fetch(`${baseUrl}/api/v1/student/assessments/${assessmentId}/game/choice`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
         });
 
         if (!response.ok) {
-           throw new Error('فشل في جلب البيانات من الخادم.');
+          throw new Error('فشل في جلب البيانات من الخادم.');
         }
-        
+
         const resData = await response.json();
-        
+
         let fetched: any[] = [];
         if (resData && resData.data && Array.isArray(resData.data.answers)) {
-            fetched = resData.data.answers;
+          fetched = resData.data.answers;
         } else if (resData && resData.data && Array.isArray(resData.data)) {
-            fetched = resData.data;
+          fetched = resData.data;
         } else if (Array.isArray(resData)) {
-            fetched = resData;
+          fetched = resData;
         }
 
         if (fetched.length > 0) {
           const mapped = fetched.map((q: any, idx: number) => {
             // Handle the new answers structure if present
             const isAnswerFormat = q.questionTitle !== undefined && q.choices !== undefined;
-            
+
             const questionText = isAnswerFormat ? q.questionTitle : (q.choiceDetails?.title || 'بدون سؤال');
             const choicesArr = isAnswerFormat ? q.choices : (q.choiceDetails?.choices || []);
-            
+
             let word = 'إجابة';
             let distractors: string[] = [];
 
             if (isAnswerFormat) {
               word = q.correctAnswer;
               distractors = choicesArr
-                .map((c: any) => c.text)
-                .filter((text: string) => text !== word);
+                .map((c: any) => c?.text)
+                .filter((text: any) => typeof text === 'string' && text.trim() !== '' && text !== word);
             } else {
               const details = q.choiceDetails || {};
               const correctIndex = details.correctAnswer !== undefined ? details.correctAnswer : 0;
-              word = choicesArr[correctIndex] || 'إجابة';
-              distractors = choicesArr.filter((_: any, i: number) => i !== correctIndex);
+              
+              // choicesArr might contain objects like { text: "..." } or raw strings
+              const mappedChoices = choicesArr.map((c: any) => typeof c === 'string' ? c : c?.text).filter((t: any) => typeof t === 'string' && t.trim() !== '');
+
+              word = mappedChoices[correctIndex] || 'إجابة';
+              distractors = mappedChoices.filter((_: any, i: number) => i !== correctIndex);
             }
 
             // Keep maximum of 3 distractors so total words is never more than 4
             distractors = distractors.slice(0, 3);
-            
+
             return {
               id: q.id || q.questionId || idx,
               questionText: questionText,
@@ -110,7 +114,7 @@ function App() {
 
   const handleCorrectAnswer = () => {
     setScore((prev) => prev + 100);
-    
+
     // Check if there are more questions
     if (currentQuestionIndex + 1 < apiQuestions.length) {
       setCurrentQuestionIndex((prev) => prev + 1);
@@ -155,7 +159,7 @@ function App() {
       {view === 'welcome' && (
         <WelcomeScreen onStart={handleStartGame} />
       )}
-      
+
       {view === 'playing' && (
         <GameScreen
           questions={apiQuestions}
