@@ -108,10 +108,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   };
 
   return (
-    <div className="w-full max-w-[1400px] mx-auto p-2 flex flex-col items-center justify-start gap-2 h-[100dvh] overflow-hidden">
+    <div className="w-full max-w-[1400px] mx-auto p-2 sm:p-4 flex flex-col items-center justify-start gap-3 h-[100dvh] overflow-hidden">
 
       {/* 1. Header panel */}
-      <div className="glass-panel w-full flex items-center justify-between px-6 py-3 relative z-10 flex-shrink-0">
+      <div className="glass-panel w-full flex items-center justify-between px-4 md:px-5 lg:px-6 py-2 lg:py-3 relative z-10 flex-shrink-0">
         <button
           onClick={onBackToWelcome}
           className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
@@ -142,18 +142,18 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         </div>
       </div>
 
-      {/* 2. Main layout: side-by-side starting at 768px */}
-      <div className="flex-1 w-full min-h-0 flex flex-col md:flex-row items-stretch justify-center gap-2 md:gap-4 lg:gap-8 pb-1">
+      {/* 2. Main layout: stacked on mobile, side-by-side on md+ */}
+      <div className="flex-1 w-full min-h-0 flex flex-col md:flex-row items-stretch justify-center gap-2 md:gap-4 lg:gap-10 pb-1">
 
-        {/* Left Side: Question Display — fixed width on md+ */}
-        <div className="glass-panel w-full md:w-[220px] lg:w-[280px] p-2 text-center flex flex-col items-center justify-center min-h-0 border border-[#00f0ff]/20 shadow-lg rounded-2xl relative overflow-hidden flex-shrink-0 md:flex-shrink-0">
+        {/* Left Side: Question Display */}
+        <div className="glass-panel w-full md:w-[200px] lg:w-[320px] p-2 lg:p-4 text-center flex flex-col items-center justify-center min-h-0 flex-shrink-0 border border-[#00f0ff]/20 shadow-lg rounded-2xl relative overflow-hidden">
           {/* Question Elements (Text, Image, Audio) */}
           {currentQuestion && (
             <div className="relative z-10 w-full h-full flex flex-col items-center justify-center p-1 lg:p-2 gap-2 lg:gap-4">
 
               {/* Optional Image */}
               {currentQuestion.image && (
-                <div className="w-full max-h-[15vh] lg:flex-1 lg:max-h-none min-h-0 flex items-center justify-center">
+                <div className="w-full max-h-[12vh] md:max-h-full md:flex-1 lg:max-h-none min-h-0 flex items-center justify-center overflow-hidden">
                   <img
                     src={currentQuestion.image}
                     alt="سؤال المتاهة"
@@ -171,7 +171,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
 
               {/* Optional Audio */}
               {currentQuestion.audioUrl && (
-                <div className="w-full shrink-0 flex items-center justify-center mt-3 lg:mt-5">
+                <div className="w-full shrink-0 flex items-center justify-center mt-1 md:mt-2 lg:mt-5">
                   <audio
                     ref={audioRef}
                     src={currentQuestion.audioUrl}
