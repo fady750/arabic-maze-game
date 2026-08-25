@@ -143,17 +143,17 @@ export const GameScreen: React.FC<GameScreenProps> = ({
       </div>
 
       {/* 2. Main layout */}
-      <div className="flex-1 w-full min-h-0 flex flex-col md:flex-row items-stretch justify-center gap-4 md:gap-6 lg:gap-10 pb-2 md:pb-4">
+      <div className="flex-1 w-full min-h-0 flex flex-col lg:flex-row items-stretch justify-center gap-2 lg:gap-10 pb-2">
 
         {/* Left Side (Actually Right in RTL): Question Display */}
-        <div className="glass-panel w-full md:w-[260px] lg:w-[320px] p-3 md:p-4 text-center flex flex-col items-center justify-center min-h-0 flex-shrink-0 border border-[#00f0ff]/20 shadow-lg rounded-2xl relative overflow-hidden">
+        <div className="glass-panel w-full lg:w-[320px] p-2 lg:p-4 text-center flex flex-col items-center justify-center min-h-0 flex-shrink-0 lg:shrink-0 border border-[#00f0ff]/20 shadow-lg rounded-2xl relative overflow-hidden">
           {/* Question Elements (Text, Image, Audio) */}
           {currentQuestion && (
-            <div className="relative z-10 w-full h-full flex flex-col items-center justify-center p-1 md:p-2 gap-2 md:gap-3 lg:gap-4">
+            <div className="relative z-10 w-full h-full flex flex-col items-center justify-center p-1 lg:p-2 gap-2 lg:gap-4">
 
               {/* Optional Image */}
               {currentQuestion.image && (
-                <div className="w-full max-h-[15vh] md:flex-1 md:max-h-none min-h-0 flex items-center justify-center">
+                <div className="w-full max-h-[15vh] lg:flex-1 lg:max-h-none min-h-0 flex items-center justify-center">
                   <img
                     src={currentQuestion.image}
                     alt="سؤال المتاهة"
