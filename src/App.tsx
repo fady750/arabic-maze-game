@@ -18,6 +18,14 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Session State
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [answersList, setAnswersList] = useState<any[]>([]);
+  const [questionStartTime, setQuestionStartTime] = useState<number>(0);
+  const [victoryData, setVictoryData] = useState<any>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
@@ -32,6 +40,27 @@ function App() {
         }
 
         const baseUrl = import.meta.env.VITE_API_BASE_URL || 'https://oasis-eduline-1.onrender.com';
+        
+        // 1. Create Session
+        try {
+          const sessionRes = await fetch(`${baseUrl}/api/v1/student/games/1/sessions?lessonId=${lessonId}`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+          if (sessionRes.ok) {
+            const sData = await sessionRes.json();
+            if (sData?.data?.id) {
+              setSessionId(sData.data.id);
+              setSessionToken(token);
+            }
+          }
+        } catch (e) {
+          console.error("Failed to create session", e);
+        }
+
+        // 2. Fetch Questions
         const response = await fetch(`${baseUrl}/api/v1/student/games/1/questions?lessonId=${lessonId}`, {
           headers: {
             Authorization: `Bearer ${token}`
@@ -129,22 +158,96 @@ function App() {
     setScore(0);
     setLives(3);
     setCurrentQuestionIndex(0);
+    setAnswersList([]);
+    setVictoryData(null);
+    setQuestionStartTime(Date.now());
     setView('playing');
   };
 
-  const handleCorrectAnswer = () => {
-    setScore((prev) => prev + 100);
-
-    // Check if there are more questions
-    if (currentQuestionIndex + 1 < apiQuestions.length) {
-      setCurrentQuestionIndex((prev) => prev + 1);
-    } else {
+  const submitGameSession = async (finalAnswers: any[]) => {
+    if (!sessionId || !sessionToken) {
       setView('victory');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setView('victory');
+
+    try {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'https://oasis-eduline-1.onrender.com';
+      
+      // Submit Answers
+      await fetch(`${baseUrl}/api/v1/student/games/sessions/${sessionId}/submit-answers`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${sessionToken}`
+        },
+        body: JSON.stringify({ answers: finalAnswers })
+      });
+
+      // Complete Session
+      const completeRes = await fetch(`${baseUrl}/api/v1/student/games/sessions/${sessionId}/complete`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${sessionToken}`
+        }
+      });
+
+      if (completeRes.ok) {
+        const cData = await completeRes.json();
+        if (cData?.data) {
+          setVictoryData(cData.data);
+        }
+      }
+    } catch (e) {
+      console.error("Error submitting session:", e);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleWrongAnswer = () => {
-    setScore((prev) => Math.max(0, prev - 20));
+  const handleCorrectAnswer = () => {
+    const timeTaken = Math.max(1, Math.floor((Date.now() - questionStartTime) / 1000));
+    const currentQ = apiQuestions[currentQuestionIndex];
+    
+    const answerRecord = {
+      questionId: currentQ.id,
+      selectedAnswer: currentQ.word,
+      isCorrect: true,
+      timeTaken: timeTaken,
+      pointsEarned: 10
+    };
+
+    setAnswersList(prev => {
+      const newAnswers = [...prev, answerRecord];
+      
+      // Check if there are more questions
+      if (currentQuestionIndex + 1 < apiQuestions.length) {
+        setCurrentQuestionIndex(currentQuestionIndex + 1);
+        setQuestionStartTime(Date.now());
+      } else {
+        submitGameSession(newAnswers);
+      }
+      return newAnswers;
+    });
+
+    setScore((prev) => prev + 10);
+  };
+
+  const handleWrongAnswer = (wrongWord: string) => {
+    const timeTaken = Math.max(1, Math.floor((Date.now() - questionStartTime) / 1000));
+    const currentQ = apiQuestions[currentQuestionIndex];
+    
+    setAnswersList(prev => [...prev, {
+      questionId: currentQ.id,
+      selectedAnswer: wrongWord,
+      isCorrect: false,
+      timeTaken: timeTaken,
+      pointsEarned: 0
+    }]);
+
+    setScore((prev) => Math.max(0, prev - 5));
   };
 
   const handleLoseLife = () => {
@@ -205,6 +308,8 @@ function App() {
       {view === 'victory' && (
         <VictoryModal
           score={score}
+          isSubmitting={isSubmitting}
+          victoryData={victoryData}
           onRestart={handleStartGame}
           onHome={() => setView('welcome')}
         />

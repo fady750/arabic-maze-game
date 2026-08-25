@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Heart, ArrowLeft } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Volume2, Heart, ArrowLeft } from 'lucide-react';
 import { MazeCanvas } from './MazeCanvas';
 import type { Question } from '../data/questions';
 
@@ -34,6 +34,30 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   const [lastIndex, setLastIndex] = useState<number>(-1);
   const [notification, setNotification] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+
+  useEffect(() => {
+    if (currentQuestion?.audioUrl) {
+      const timer = setTimeout(() => {
+        if (audioRef.current) {
+          audioRef.current.play().catch(e => console.log('Autoplay prevented:', e));
+        }
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [currentQuestionIndex, currentQuestion?.audioUrl]);
+
+  const toggleAudio = () => {
+    if (!audioRef.current) return;
+    if (isPlayingAudio) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(e => console.log('Play prevented:', e));
+    }
+  };
+
   // Touch pad external direction input
   const extDir = null;
 
@@ -146,15 +170,26 @@ export const GameScreen: React.FC<GameScreenProps> = ({
 
               {/* Optional Audio */}
               {currentQuestion.audioUrl && (
-                <div className="w-full shrink-0 flex items-center justify-center mt-1 lg:mt-2">
+                <div className="w-full shrink-0 flex items-center justify-center mt-2 lg:mt-4">
                   <audio 
-                    src={currentQuestion.audioUrl} 
-                    controls 
-                    className="w-full max-w-[260px] h-10 rounded-full bg-[#00f0ff]/10"
-                    controlsList="nodownload noplaybackrate"
+                    ref={audioRef}
+                    src={currentQuestion.audioUrl}
+                    onPlay={() => setIsPlayingAudio(true)}
+                    onPause={() => setIsPlayingAudio(false)}
+                    onEnded={() => setIsPlayingAudio(false)}
+                    className="hidden"
+                  />
+                  <button 
+                    onClick={toggleAudio}
+                    className={`flex items-center justify-center gap-3 px-8 py-4 rounded-[2rem] transition-all duration-300 transform active:scale-90 border-b-4 ${
+                      isPlayingAudio 
+                        ? 'bg-[#39ff14] border-[#2bb210] text-black shadow-lg translate-y-1' 
+                        : 'bg-[#ff007f] border-[#c00060] text-white hover:bg-[#ff1a8c] shadow-[0_4px_15px_rgba(255,0,127,0.4)] hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(255,0,127,0.6)] animate-[bounce_2s_infinite]'
+                    }`}
                   >
-                    Your browser does not support the audio element.
-                  </audio>
+                    <Volume2 className={isPlayingAudio ? 'animate-pulse' : ''} size={32} />
+                    <span className="font-black text-xl md:text-2xl">{isPlayingAudio ? 'جاري التشغيل...' : 'استمع للسؤال'}</span>
+                  </button>
                 </div>
               )}
 
