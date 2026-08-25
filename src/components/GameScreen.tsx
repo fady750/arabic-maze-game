@@ -27,7 +27,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   onBackToWelcome,
 }) => {
   const currentQuestion = questions[currentQuestionIndex];
-  
+
   // Distribute correct word + 3 distractors randomly
   // To keep it persistent for this question, we memoize it or generate it once.
   // We can use a simple seeded shuffle based on currentQuestionIndex, or state.
@@ -59,7 +59,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
       audioRef.current.play().catch(e => console.log('Play prevented:', e));
     }
   };
-  
+
   // Touch pad external direction input
   const extDir = null;
 
@@ -83,11 +83,11 @@ export const GameScreen: React.FC<GameScreenProps> = ({
 
   const handleWrong = (word: string) => {
     onWrongAnswer(word);
-    triggerNotification(`❌ كلمة "${word}" خاطئة! (-20 نقطة)`, 'error');
+    triggerNotification(`❌ كلمة "${word}" خاطئة! `, 'error');
   };
 
   const handleCorrect = () => {
-    triggerNotification('⭐ إجابة صحيحة! أحسنت! (+100 نقطة)', 'success');
+    triggerNotification('⭐ إجابة صحيحة! أحسنت!', 'success');
     onCorrectAnswer();
   };
 
@@ -97,11 +97,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({
       hearts.push(
         <Heart
           key={i}
-          className={`w-6 h-6 transition-all duration-300 ${
-            i < lives
+          className={`w-6 h-6 transition-all duration-300 ${i < lives
               ? 'text-[#ff007f] fill-[#ff007f] filter drop-shadow-[0_0_5px_rgba(255,0,127,0.7)]'
               : 'text-gray-600 fill-transparent'
-          }`}
+            }`}
         />
       );
     }
@@ -110,7 +109,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
 
   return (
     <div className="w-full max-w-[1400px] mx-auto p-2 sm:p-4 flex flex-col items-center justify-start gap-3 h-auto overflow-y-auto lg:h-screen lg:overflow-hidden">
-      
+
       {/* 1. Header panel */}
       <div className="glass-panel w-full flex items-center justify-between px-6 py-3 relative z-10 flex-shrink-0">
         <button
@@ -145,7 +144,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
 
       {/* 2. Main layout */}
       <div className="flex-1 w-full min-h-0 flex flex-col lg:flex-row items-stretch justify-center gap-6 lg:gap-10 pb-4">
-        
+
         {/* Left Side (Actually Right in RTL): Question Display */}
         <div className="glass-panel w-full lg:w-[320px] p-4 text-center flex flex-col items-center justify-center min-h-0 flex-shrink-0 border border-[#00f0ff]/20 shadow-lg rounded-2xl relative overflow-hidden">
           {/* Question Text and/or Image */}
@@ -153,20 +152,20 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             <div className="relative z-10 w-full h-full flex flex-col items-center justify-center p-2">
               {currentQuestion.image ? (
                 <>
-                    <div className="flex-1 w-full min-h-0 flex items-center justify-center mb-4">
-                      <img
-                          src={currentQuestion.image}
-                          alt="سؤال المتاهة"
-                          className="max-w-full max-h-full object-contain drop-shadow-lg"
-                      />
-                    </div>
-                    <div className="text-xl lg:text-2xl text-white font-black text-center leading-relaxed shrink-0">
-                        {currentQuestion.questionText}
-                    </div>
+                  <div className="flex-1 w-full min-h-0 flex items-center justify-center mb-4">
+                    <img
+                      src={currentQuestion.image}
+                      alt="سؤال المتاهة"
+                      className="max-w-full max-h-full object-contain drop-shadow-lg"
+                    />
+                  </div>
+                  <div className="text-xl lg:text-2xl text-white font-black text-center leading-relaxed shrink-0">
+                    {currentQuestion.questionText}
+                  </div>
                 </>
               ) : (
                 <div className="text-2xl lg:text-3xl text-white font-black text-center leading-relaxed p-4">
-                    {currentQuestion.questionText}
+                  {currentQuestion.questionText}
                 </div>
               )}
 
@@ -206,11 +205,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           {/* Toast Notification overlay */}
           {notification && (
             <div
-              className={`absolute top-4 px-6 py-3 rounded-full font-black text-white shadow-lg transition-all duration-300 z-20 ${
-                notification.type === 'success'
+              className={`absolute top-4 px-6 py-3 rounded-full font-black text-white shadow-lg transition-all duration-300 z-20 ${notification.type === 'success'
                   ? 'bg-emerald-600/90 border border-emerald-400 neon-border-cyan'
                   : 'bg-rose-600/90 border border-rose-400 animate-shake neon-border-pink'
-              }`}
+                }`}
             >
               {notification.text}
             </div>
