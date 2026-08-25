@@ -45,37 +45,56 @@ function App() {
         const resData = await response.json();
 
         let fetched: any[] = [];
-        if (resData && resData.data && Array.isArray(resData.data.answers)) {
-          fetched = resData.data.answers;
+        if (resData && resData.data && Array.isArray(resData.data.questions)) {
+            fetched = resData.data.questions;
+        } else if (resData && resData.data && Array.isArray(resData.data.answers)) {
+            fetched = resData.data.answers;
         } else if (resData && resData.data && Array.isArray(resData.data)) {
-          fetched = resData.data;
+            fetched = resData.data;
         } else if (Array.isArray(resData)) {
-          fetched = resData;
+            fetched = resData;
         }
 
         if (fetched.length > 0) {
           const mapped = fetched.map((q: any, idx: number) => {
-            // Handle the new answers structure if present
+            // Determine format
+            const isOptionsFormat = q.question !== undefined && q.options !== undefined;
             const isAnswerFormat = q.questionTitle !== undefined && q.choices !== undefined;
+            const hasChoiceDetails = q.choiceDetails !== undefined;
 
-            const questionText = isAnswerFormat ? q.questionTitle : (q.choiceDetails?.title || 'بدون سؤال');
-            const choicesArr = isAnswerFormat ? q.choices : (q.choiceDetails?.choices || []);
-
+            let questionText = 'بدون سؤال';
+            let choicesArr: any[] = [];
             let word = 'إجابة';
             let distractors: string[] = [];
+            let image = null;
+            let audio = null;
 
-            if (isAnswerFormat) {
-              word = q.correctAnswer;
-              distractors = choicesArr
-                .map((c: any) => c?.text)
-                .filter((text: any) => typeof text === 'string' && text.trim() !== '' && text !== word);
-            } else {
-              const details = q.choiceDetails || {};
-              const correctIndex = details.correctAnswer !== undefined ? details.correctAnswer : 0;
+            if (isOptionsFormat) {
+              questionText = q.question || 'بدون سؤال';
+              choicesArr = q.options || [];
+              word = q.correctAnswer || 'إجابة';
+              image = q.imageUrl || q.image || null;
+              audio = q.audioUrl || null;
               
-              // choicesArr might contain objects like { text: "..." } or raw strings
               const mappedChoices = choicesArr.map((c: any) => typeof c === 'string' ? c : c?.text).filter((t: any) => typeof t === 'string' && t.trim() !== '');
-
+              distractors = mappedChoices.filter((t: string) => t !== word);
+            } else if (isAnswerFormat) {
+              questionText = q.questionTitle || 'بدون سؤال';
+              choicesArr = q.choices || [];
+              word = q.correctAnswer || 'إجابة';
+              image = q.image || null;
+              
+              const mappedChoices = choicesArr.map((c: any) => typeof c === 'string' ? c : c?.text).filter((t: any) => typeof t === 'string' && t.trim() !== '');
+              distractors = mappedChoices.filter((t: string) => t !== word);
+            } else if (hasChoiceDetails) {
+              const details = q.choiceDetails || {};
+              questionText = details.title || 'بدون سؤال';
+              choicesArr = details.choices || [];
+              image = details.image || null;
+              
+              const correctIndex = details.correctAnswer !== undefined ? details.correctAnswer : 0;
+              const mappedChoices = choicesArr.map((c: any) => typeof c === 'string' ? c : c?.text).filter((t: any) => typeof t === 'string' && t.trim() !== '');
+              
               word = mappedChoices[correctIndex] || 'إجابة';
               distractors = mappedChoices.filter((_: any, i: number) => i !== correctIndex);
             }
@@ -86,7 +105,8 @@ function App() {
             return {
               id: q.id || q.questionId || idx,
               questionText: questionText,
-              image: q.image || q.choiceDetails?.image || null,
+              image: image,
+              audioUrl: audio,
               word: word,
               distractors: distractors
             };
