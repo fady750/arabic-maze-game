@@ -7,7 +7,7 @@ import robotDownImg from '../assets/robot-down.png';
 
 // 19x19 Maze Grid Layout (1 = Wall, 0 = Path)
 const MAZE_GRID = [
-  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+  [1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1],
   [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1], // TL Room (cols 1..3), TR Room (cols 15..17)
   [1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1],
   [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1], // Room entry doors at col 4 and 14
@@ -25,13 +25,13 @@ const MAZE_GRID = [
   [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1], // BL Room (cols 1..3), BR Room (cols 15..17)
   [1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1],
   [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
-  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+  [1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 ];
 
 // Warp Portals (Top <-> Bottom)
 const WARP_PORTALS = [
-  { x: 9, y: 1, targetX: 9, targetY: 16, exitDir: 'up', color: '#00f0ff' },
-  { x: 9, y: 17, targetX: 9, targetY: 2, exitDir: 'down', color: '#ff007f' }
+  { x: 9, y: 0, targetX: 9, targetY: 17, exitDir: 'up', color: '#00f0ff' },
+  { x: 9, y: 18, targetX: 9, targetY: 1, exitDir: 'down', color: '#ff007f' }
 ];
 
 // Room Centers & Colors
@@ -434,7 +434,20 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         player.gridX = player.targetX;
         player.gridY = player.targetY;
 
-
+        // Check if player stepped on a warp portal
+        const steppedPortal = WARP_PORTALS.find(p => p.x === player.gridX && p.y === player.gridY);
+        if (steppedPortal) {
+          gameAudio.playTeleport();
+          player.x = steppedPortal.targetX * cellSize + cellSize / 2;
+          player.y = steppedPortal.targetY * cellSize + cellSize / 2;
+          player.gridX = steppedPortal.targetX;
+          player.gridY = steppedPortal.targetY;
+          player.targetX = steppedPortal.targetX;
+          player.targetY = steppedPortal.targetY;
+          player.dir = steppedPortal.exitDir as any;
+          player.nextDir = steppedPortal.exitDir as any;
+          player.invincibleFrames = Math.max(player.invincibleFrames, 30);
+        }
 
         const desiredDir = getDesiredDirection();
         let dX = 0;
