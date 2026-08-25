@@ -91,7 +91,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  
+
   const robotImageRef = useRef<HTMLImageElement | null>(null);
   const robotSideRef = useRef<HTMLImageElement | null>(null);
   const robotUpRef = useRef<HTMLImageElement | null>(null);
@@ -403,7 +403,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
   const isWalkable = (gx: number, gy: number): boolean => {
     if (gx < 0 || gx >= 19 || gy < 0 || gy >= 19) return false;
-    
+
     // Check if inside a caged room (3x3 area + portal entrance)
     for (const room of cagedRooms) {
       if (Math.abs(gx - room.x) <= 1 && Math.abs(gy - room.y) <= 1) return false;
@@ -726,7 +726,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         ctx.moveTo(i * cellSize, 0);
         ctx.lineTo(i * cellSize, 19 * cellSize);
         ctx.stroke();
-        
+
         ctx.beginPath();
         ctx.moveTo(0, i * cellSize);
         ctx.lineTo(19 * cellSize, i * cellSize);
@@ -738,9 +738,9 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       ctx.shadowBlur = 4;
       for (let r = 0; r <= 19; r++) {
         for (let c = 0; c <= 19; c++) {
-           ctx.beginPath();
-           ctx.arc(c * cellSize, r * cellSize, 1.5, 0, Math.PI * 2);
-           ctx.fill();
+          ctx.beginPath();
+          ctx.arc(c * cellSize, r * cellSize, 1.5, 0, Math.PI * 2);
+          ctx.fill();
         }
       }
       ctx.shadowBlur = 0;
@@ -777,13 +777,13 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
           if (isWall && !isPortalCell(c, r)) {
             const x = c * cellSize;
             const y = r * cellSize;
-            
+
             // Base wall (dark blue metallic)
-            ctx.fillStyle = '#0a192f'; 
+            ctx.fillStyle = '#0a192f';
             ctx.fillRect(x, y, cellSize, cellSize);
-            
+
             // Inner raised panel
-            ctx.fillStyle = '#112240'; 
+            ctx.fillStyle = '#112240';
             ctx.fillRect(x + 3, y + 3, cellSize - 6, cellSize - 6);
 
             // Sci-fi borders
@@ -795,7 +795,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
             ctx.strokeStyle = '#00f0ff';
             ctx.shadowColor = '#00f0ff';
             ctx.shadowBlur = 5;
-            
+
             // Top left corner highlight
             ctx.beginPath();
             ctx.moveTo(x + 6, y + 1);
@@ -814,7 +814,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
             if ((r * 13 + c * 7) % 11 === 0) {
               ctx.shadowBlur = 8;
               ctx.fillStyle = '#00f0ff';
-              ctx.fillRect(x + cellSize/2 - 3, y + 3, 6, 2);
+              ctx.fillRect(x + cellSize / 2 - 3, y + 3, 6, 2);
             }
 
             ctx.shadowBlur = 0; // Reset
@@ -986,7 +986,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       const isInvincible = player.invincibleFrames > 0;
       // Flashing effect during invincibility
       if (!isInvincible || Math.floor(player.invincibleFrames / 5) % 2 === 0) {
-        
+
         // Select the correct image based on direction
         let currentImg = robotDownRef.current; // Default to facing camera
         let flipHorizontal = false;
@@ -1121,8 +1121,10 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       className="relative flex justify-center items-center rounded-2xl overflow-hidden shadow-[0_0_40px_rgba(0,240,255,0.15)] bg-[#030712] border-2 border-[#1e3a8a]/50 touch-none select-none"
       style={{
         aspectRatio: '1/1',
-        maxHeight: '100%',
+        width: '100%',
+        height: 'auto',
         maxWidth: '100%',
+        maxHeight: '100%'
       }}
     >
       <canvas

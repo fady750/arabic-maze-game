@@ -108,7 +108,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   };
 
   return (
-    <div className="w-full max-w-[1400px] mx-auto p-2 sm:p-4 flex flex-col items-center justify-start gap-3 h-[100dvh] overflow-hidden">
+    <div className="w-full max-w-[1400px] mx-auto p-2 sm:p-4 flex flex-col items-center justify-start gap-3 h-auto overflow-y-auto lg:h-screen lg:overflow-hidden">
 
       {/* 1. Header panel */}
       <div className="glass-panel w-full flex items-center justify-between px-6 py-3 relative z-10 flex-shrink-0">

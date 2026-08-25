@@ -40,7 +40,7 @@ function App() {
         }
 
         const baseUrl = import.meta.env.VITE_API_BASE_URL || 'https://oasis-eduline-1.onrender.com';
-        
+
         // 1. Create Session
         try {
           const sessionRes = await fetch(`${baseUrl}/api/v1/student/games/1/sessions?lessonId=${lessonId}`, {
@@ -175,7 +175,7 @@ function App() {
 
     try {
       const baseUrl = import.meta.env.VITE_API_BASE_URL || 'https://oasis-eduline-1.onrender.com';
-      
+
       // Submit Answers
       await fetch(`${baseUrl}/api/v1/student/games/sessions/${sessionId}/submit-answers`, {
         method: 'POST',
@@ -210,7 +210,7 @@ function App() {
   const handleCorrectAnswer = () => {
     const timeTaken = Math.max(1, Math.floor((Date.now() - questionStartTime) / 1000));
     const currentQ = apiQuestions[currentQuestionIndex];
-    
+
     const answerRecord = {
       questionId: currentQ.id,
       selectedAnswer: currentQ.word,
@@ -221,7 +221,7 @@ function App() {
 
     setAnswersList(prev => {
       const newAnswers = [...prev, answerRecord];
-      
+
       // Check if there are more questions
       if (currentQuestionIndex + 1 < apiQuestions.length) {
         setCurrentQuestionIndex(currentQuestionIndex + 1);
@@ -238,7 +238,7 @@ function App() {
   const handleWrongAnswer = (wrongWord: string) => {
     const timeTaken = Math.max(1, Math.floor((Date.now() - questionStartTime) / 1000));
     const currentQ = apiQuestions[currentQuestionIndex];
-    
+
     setAnswersList(prev => [...prev, {
       questionId: currentQ.id,
       selectedAnswer: wrongWord,
@@ -278,7 +278,7 @@ function App() {
   }
 
   return (
-    <div className="w-screen h-[100dvh] overflow-hidden flex items-center justify-center bg-[#0a0a2a]">
+    <div className="w-screen min-h-screen overflow-x-hidden flex items-center justify-center">
       {view === 'welcome' && (
         <WelcomeScreen onStart={handleStartGame} />
       )}
