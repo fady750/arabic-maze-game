@@ -202,29 +202,31 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         </div>
 
         {/* Center: Maze Board */}
-        <div className="relative flex-1 flex flex-col items-center justify-center w-full h-full min-h-0 min-w-0">
-          {/* Toast Notification overlay */}
-          {notification && (
-            <div
-              className={`absolute top-4 px-6 py-3 rounded-full font-black text-white shadow-lg transition-all duration-300 z-20 ${notification.type === 'success'
-                ? 'bg-emerald-600/90 border border-emerald-400 neon-border-cyan'
-                : 'bg-rose-600/90 border border-rose-400 animate-shake neon-border-pink'
-                }`}
-            >
-              {notification.text}
-            </div>
-          )}
+        <div className="relative flex-1 w-full h-full min-h-0 min-w-0">
+          <div className="absolute inset-0 flex flex-col items-center justify-center overflow-hidden">
+            {/* Toast Notification overlay */}
+            {notification && (
+              <div
+                className={`absolute top-4 px-6 py-3 rounded-full font-black text-white shadow-lg transition-all duration-300 z-20 ${notification.type === 'success'
+                  ? 'bg-emerald-600/90 border border-emerald-400 neon-border-cyan'
+                  : 'bg-rose-600/90 border border-rose-400 animate-shake neon-border-pink'
+                  }`}
+              >
+                {notification.text}
+              </div>
+            )}
 
-          <MazeCanvas
-            words={shuffledWords}
-            correctWord={currentQuestion?.word}
-            onCorrect={handleCorrect}
-            onWrong={handleWrong}
-            onLoseLife={onLoseLife}
-            lives={lives}
-            isPaused={false}
-            externalDirection={extDir}
-          />
+            <MazeCanvas
+              words={shuffledWords}
+              correctWord={currentQuestion?.word}
+              onCorrect={handleCorrect}
+              onWrong={handleWrong}
+              onLoseLife={onLoseLife}
+              lives={lives}
+              isPaused={false}
+              externalDirection={extDir}
+            />
+          </div>
         </div>
 
       </div>
