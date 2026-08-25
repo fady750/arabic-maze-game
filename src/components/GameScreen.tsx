@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Volume2, Heart, ArrowLeft } from 'lucide-react';
+import { Heart, ArrowLeft } from 'lucide-react';
 import { MazeCanvas } from './MazeCanvas';
 import type { Question } from '../data/questions';
 
@@ -170,7 +170,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
 
               {/* Optional Audio */}
               {currentQuestion.audioUrl && (
-                <div className="w-full shrink-0 flex items-center justify-center mt-2 lg:mt-4">
+                <div className="w-full shrink-0 flex items-center justify-center mt-3 lg:mt-5">
                   <audio 
                     ref={audioRef}
                     src={currentQuestion.audioUrl}
@@ -181,14 +181,19 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                   />
                   <button 
                     onClick={toggleAudio}
-                    className={`flex items-center justify-center gap-3 px-8 py-4 rounded-[2rem] transition-all duration-300 transform active:scale-90 border-b-4 ${
+                    className={`relative overflow-hidden group flex items-center justify-center gap-3 px-8 py-4 lg:py-5 rounded-[2.5rem] transition-all duration-300 transform active:scale-90 border-b-8 ${
                       isPlayingAudio 
-                        ? 'bg-[#39ff14] border-[#2bb210] text-black shadow-lg translate-y-1' 
-                        : 'bg-[#ff007f] border-[#c00060] text-white hover:bg-[#ff1a8c] shadow-[0_4px_15px_rgba(255,0,127,0.4)] hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(255,0,127,0.6)] animate-[bounce_2s_infinite]'
+                        ? 'bg-gradient-to-r from-[#39ff14] to-[#00f0ff] border-[#20aa0c] text-black shadow-xl translate-y-2' 
+                        : 'bg-gradient-to-r from-[#ff007f] to-[#ff5e00] border-[#a00050] text-white hover:-translate-y-1 shadow-[0_8px_25px_rgba(255,0,127,0.5)] hover:shadow-[0_12px_30px_rgba(255,0,127,0.7)] animate-[bounce_2.5s_infinite]'
                     }`}
                   >
-                    <Volume2 className={isPlayingAudio ? 'animate-pulse' : ''} size={32} />
-                    <span className="font-black text-xl md:text-2xl">{isPlayingAudio ? 'جاري التشغيل...' : 'استمع للسؤال'}</span>
+                    <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity rounded-[2.5rem]"></div>
+                    <span className={`text-4xl lg:text-5xl filter drop-shadow-md transition-transform ${isPlayingAudio ? 'animate-pulse scale-110' : 'group-hover:scale-110'}`}>
+                      {isPlayingAudio ? '🎶' : '🔊'}
+                    </span>
+                    <span className="font-black text-2xl lg:text-3xl filter drop-shadow-sm tracking-wide z-10 relative">
+                      {isPlayingAudio ? 'جاري التشغيل...' : 'إضغط لتسمع!'}
+                    </span>
                   </button>
                 </div>
               )}
