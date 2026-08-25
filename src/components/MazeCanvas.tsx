@@ -123,7 +123,8 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
   // Local state for wrong room cooldowns to prevent double triggers
   const lastRoomVisitedRef = useRef<{ id: number; time: number } | null>(null);
-  const cameraRef = useRef({ x: 9 * 32 + 16, y: 9 * 32 + 16 });
+  const cameraRef = useRef({ x: 9 * 32 + 16, y: 9 * 32 + 16, zoom: 1.8 });
+  const celebrationRef = useRef<{ active: boolean, progress: number } | null>(null);
 
 
   // Joystick state
@@ -273,6 +274,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
     cameraRef.current = {
       x: 9 * cellSize + cellSize / 2,
       y: 9 * cellSize + cellSize / 2,
+      zoom: 1.8
     };
 
     // Reset monsters based on current level / words length
@@ -469,7 +471,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       camera.x += (player.x - camera.x) * camLerp;
       camera.y += (player.y - camera.y) * camLerp;
 
-      const zoom = 1.8;
+      const zoom = camera.zoom;
       const visibleWidth = (19 * cellSize) / zoom;
       const visibleHeight = (19 * cellSize) / zoom;
       const minX = visibleWidth / 2;
@@ -631,7 +633,10 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
           lastRoomVisitedRef.current = { id: room.id, time: now };
 
           if (wordInRoom === correctWord) {
-            onCorrect();
+            if (!celebrationRef.current) {
+              celebrationRef.current = { active: true, progress: 0 };
+              gameAudio.playTeleport(); // Play some sound for success
+            }
           } else {
             gameAudio.playWrong();
             onWrong(wordInRoom);
@@ -648,7 +653,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
       ctx.save();
       ctx.scale(2, 2);
-      const zoom = 1.8;
+      const zoom = cameraRef.current.zoom;
       ctx.translate((19 * cellSize) / 2, (19 * cellSize) / 2);
       ctx.scale(zoom, zoom);
       ctx.translate(-cameraRef.current.x, -cameraRef.current.y);
@@ -891,7 +896,30 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
     };
 
     const runFrame = () => {
-      updateGame();
+      if (celebrationRef.current) {
+        celebrationRef.current.progress++;
+        const p = celebrationRef.current.progress;
+        const maxFrames = 75; // 1.25 seconds of celebration zoom
+        const ratio = Math.min(p / maxFrames, 1);
+        
+        // Easing cubic out
+        const easeRatio = 1 - Math.pow(1 - ratio, 3);
+        cameraRef.current.zoom = 1.8 + (6.0 - 1.8) * easeRatio;
+        
+        // Pull camera heavily towards player during zoom
+        const player = playerRef.current;
+        cameraRef.current.x += (player.x - cameraRef.current.x) * 0.15;
+        cameraRef.current.y += (player.y - cameraRef.current.y) * 0.15;
+        
+        if (p >= maxFrames) {
+          celebrationRef.current = null;
+          cameraRef.current.zoom = 1.8; // reset
+          onCorrect();
+        }
+      } else {
+        updateGame();
+      }
+      
       drawGame();
       animationId = requestAnimationFrame(runFrame);
     };
