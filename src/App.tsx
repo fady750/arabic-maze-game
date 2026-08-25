@@ -21,7 +21,7 @@ function App() {
   // Session State
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
-  const [answersList, setAnswersList] = useState<any[]>([]);
+  const [, setAnswersList] = useState<any[]>([]);
   const [questionStartTime, setQuestionStartTime] = useState<number>(0);
   const [victoryData, setVictoryData] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
