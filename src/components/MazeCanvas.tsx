@@ -28,6 +28,12 @@ const MAZE_GRID = [
   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 ];
 
+// Warp Portals (Top <-> Bottom)
+const WARP_PORTALS = [
+  { x: 9, y: 1, targetX: 9, targetY: 16, exitDir: 'up', color: '#00f0ff' },
+  { x: 9, y: 17, targetX: 9, targetY: 2, exitDir: 'down', color: '#ff007f' }
+];
+
 // Room Centers & Colors
 const ROOMS = [
   { id: 0, x: 2, y: 2, label: 'أعلى اليسار', color: '#39ff14', glow: 'rgba(57, 255, 20, 0.15)' }, // TL
@@ -773,6 +779,73 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
           }
         }
       }
+
+      // 2.5 Draw Warp Portals
+      const now = Date.now();
+      WARP_PORTALS.forEach((portal) => {
+        const px = portal.x * cellSize + cellSize / 2;
+        const py = portal.y * cellSize + cellSize / 2;
+        const baseAngle = (now / 600) % (Math.PI * 2);
+        const radius = cellSize / 2;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(px, py, radius, 0, Math.PI * 2);
+        ctx.clip();
+
+        ctx.fillStyle = '#050a1f';
+        ctx.fillRect(px - radius, py - radius, radius * 2, radius * 2);
+
+        for (let layer = 1; layer <= 2; layer++) {
+          const layerAngle = baseAngle * (layer % 2 === 0 ? 1 : -1) / layer;
+          const nebulaGrad = ctx.createRadialGradient(
+            px + Math.cos(layerAngle) * radius * 0.25,
+            py + Math.sin(layerAngle) * radius * 0.25,
+            0,
+            px, py, radius * 0.9
+          );
+          const alpha = 0.15 + Math.sin(now / 400 + layer) * 0.05;
+          nebulaGrad.addColorStop(0, portal.color + Math.floor(alpha * 255).toString(16).padStart(2, '0'));
+          nebulaGrad.addColorStop(1, 'transparent');
+          ctx.fillStyle = nebulaGrad;
+          ctx.fillRect(px - radius, py - radius, radius * 2, radius * 2);
+        }
+
+        ctx.strokeStyle = portal.color;
+        ctx.lineWidth = 1.5;
+        ctx.globalAlpha = 0.6;
+        for (let arm = 0; arm < 2; arm++) {
+          ctx.beginPath();
+          for (let t = 0; t < 40; t++) {
+            const angle = baseAngle * 2 + (arm * Math.PI) + (t * 0.15);
+            const r = (t / 40) * radius;
+            const x = px + Math.cos(angle) * r;
+            const y = py + Math.sin(angle) * r;
+            if (t === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+        }
+
+        ctx.restore();
+
+        ctx.save();
+        ctx.shadowColor = portal.color;
+        ctx.shadowBlur = 10;
+        ctx.strokeStyle = portal.color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(px, py, radius - 1, 0, Math.PI * 2);
+        ctx.stroke();
+
+        const pulse = 0.5 + Math.sin(now / 300) * 0.3;
+        ctx.strokeStyle = portal.color + Math.floor(pulse * 255).toString(16).padStart(2, '0');
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(px, py, radius + 2 + Math.sin(now / 200) * 1.5, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      });
 
       // 3. Draw Room Words (Arabic connected text support)
       ctx.textAlign = 'center';
