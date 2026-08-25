@@ -13,6 +13,7 @@ export interface Question {
   image: string | null;
   word: string;
   distractors: string[];
+  audioUrl?: string | null;
 }
 
 export const QUESTIONS: Question[] = [

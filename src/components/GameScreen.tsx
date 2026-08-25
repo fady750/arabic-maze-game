@@ -122,27 +122,42 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         
         {/* Left Side (Actually Right in RTL): Question Display */}
         <div className="glass-panel w-full lg:w-[320px] p-4 text-center flex flex-col items-center justify-center min-h-0 flex-shrink-0 border border-[#00f0ff]/20 shadow-lg rounded-2xl relative overflow-hidden">
-          {/* Question Text and/or Image */}
+          {/* Question Elements (Text, Image, Audio) */}
           {currentQuestion && (
-            <div className="relative z-10 w-full h-full flex flex-col items-center justify-center p-2">
-              {currentQuestion.image ? (
-                <>
-                    <div className="flex-1 w-full min-h-0 flex items-center justify-center mb-4">
-                      <img
-                          src={currentQuestion.image}
-                          alt="سؤال المتاهة"
-                          className="max-w-full max-h-full object-contain drop-shadow-lg"
-                      />
-                    </div>
-                    <div className="text-xl lg:text-2xl text-white font-black text-center leading-relaxed shrink-0">
-                        {currentQuestion.questionText}
-                    </div>
-                </>
-              ) : (
-                <div className="text-2xl lg:text-3xl text-white font-black text-center leading-relaxed p-4">
+            <div className="relative z-10 w-full h-full flex flex-col items-center justify-center p-2 gap-3 lg:gap-4">
+              
+              {/* Optional Image */}
+              {currentQuestion.image && (
+                <div className="w-full max-h-[20vh] lg:flex-1 lg:max-h-none min-h-0 flex items-center justify-center">
+                  <img
+                      src={currentQuestion.image}
+                      alt="سؤال المتاهة"
+                      className="max-w-full max-h-full object-contain drop-shadow-lg rounded-lg"
+                  />
+                </div>
+              )}
+
+              {/* Optional Text */}
+              {currentQuestion.questionText && currentQuestion.questionText !== 'بدون سؤال' && (
+                <div className={`${currentQuestion.image ? 'text-lg lg:text-2xl shrink-0' : 'text-2xl lg:text-3xl'} text-white font-black text-center leading-relaxed px-2`}>
                     {currentQuestion.questionText}
                 </div>
               )}
+
+              {/* Optional Audio */}
+              {currentQuestion.audioUrl && (
+                <div className="w-full shrink-0 flex items-center justify-center mt-1 lg:mt-2">
+                  <audio 
+                    src={currentQuestion.audioUrl} 
+                    controls 
+                    className="w-full max-w-[260px] h-10 rounded-full bg-[#00f0ff]/10"
+                    controlsList="nodownload noplaybackrate"
+                  >
+                    Your browser does not support the audio element.
+                  </audio>
+                </div>
+              )}
+
             </div>
           )}
         </div>

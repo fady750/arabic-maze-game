@@ -22,17 +22,17 @@ function App() {
     const fetchQuestions = async () => {
       try {
         const urlParams = new URLSearchParams(window.location.search);
-        const assessmentId = urlParams.get('assessmentID') || urlParams.get('assessmentId') || urlParams.get('lessonId');
+        const lessonId = urlParams.get('lessonId');
         const token = urlParams.get('token');
 
-        if (!assessmentId || !token) {
+        if (!lessonId || !token) {
           setError('عذراً، الرابط غير مكتمل. يرجى التأكد من وجود رقم التقييم ورمز المرور.');
           setIsLoading(false);
           return;
         }
 
         const baseUrl = import.meta.env.VITE_API_BASE_URL || 'https://oasis-eduline-1.onrender.com';
-        const response = await fetch(`${baseUrl}/api/v1/student/assessments/${assessmentId}/game/choice`, {
+        const response = await fetch(`${baseUrl}/api/v1/student/games/1/questions?lessonId=${lessonId}`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -46,13 +46,13 @@ function App() {
 
         let fetched: any[] = [];
         if (resData && resData.data && Array.isArray(resData.data.questions)) {
-            fetched = resData.data.questions;
+          fetched = resData.data.questions;
         } else if (resData && resData.data && Array.isArray(resData.data.answers)) {
-            fetched = resData.data.answers;
+          fetched = resData.data.answers;
         } else if (resData && resData.data && Array.isArray(resData.data)) {
-            fetched = resData.data;
+          fetched = resData.data;
         } else if (Array.isArray(resData)) {
-            fetched = resData;
+          fetched = resData;
         }
 
         if (fetched.length > 0) {
@@ -75,7 +75,7 @@ function App() {
               word = q.correctAnswer || 'إجابة';
               image = q.imageUrl || q.image || null;
               audio = q.audioUrl || null;
-              
+
               const mappedChoices = choicesArr.map((c: any) => typeof c === 'string' ? c : c?.text).filter((t: any) => typeof t === 'string' && t.trim() !== '');
               distractors = mappedChoices.filter((t: string) => t !== word);
             } else if (isAnswerFormat) {
@@ -83,7 +83,7 @@ function App() {
               choicesArr = q.choices || [];
               word = q.correctAnswer || 'إجابة';
               image = q.image || null;
-              
+
               const mappedChoices = choicesArr.map((c: any) => typeof c === 'string' ? c : c?.text).filter((t: any) => typeof t === 'string' && t.trim() !== '');
               distractors = mappedChoices.filter((t: string) => t !== word);
             } else if (hasChoiceDetails) {
@@ -91,10 +91,10 @@ function App() {
               questionText = details.title || 'بدون سؤال';
               choicesArr = details.choices || [];
               image = details.image || null;
-              
+
               const correctIndex = details.correctAnswer !== undefined ? details.correctAnswer : 0;
               const mappedChoices = choicesArr.map((c: any) => typeof c === 'string' ? c : c?.text).filter((t: any) => typeof t === 'string' && t.trim() !== '');
-              
+
               word = mappedChoices[correctIndex] || 'إجابة';
               distractors = mappedChoices.filter((_: any, i: number) => i !== correctIndex);
             }
