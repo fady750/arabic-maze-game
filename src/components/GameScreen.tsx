@@ -180,11 +180,11 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                   />
                   <button
                     onClick={toggleAudio}
-                    className={`transition-all duration-300 transform active:scale-90 hover:scale-110 ${
-                      isPlayingAudio ? 'translate-y-1 opacity-80' : 'animate-[bounce_2.5s_infinite]'
-                    }`}
+                    style={{ background: 'transparent', border: 'none', outline: 'none' }}
+                    className={`appearance-none bg-transparent border-none outline-none focus:outline-none shadow-none transition-all duration-300 transform active:scale-90 hover:scale-110 ${isPlayingAudio ? 'translate-y-1 opacity-80' : 'animate-[bounce_2.5s_infinite]'
+                      }`}
                   >
-                    <span className={`text-6xl lg:text-7xl filter drop-shadow-2xl transition-transform ${isPlayingAudio ? 'animate-pulse' : ''}`}>
+                    <span className={`block text-6xl lg:text-[7rem] leading-none filter drop-shadow-2xl transition-transform ${isPlayingAudio ? 'animate-pulse' : ''}`}>
                       {isPlayingAudio ? '🎶' : '🔊'}
                     </span>
                   </button>
