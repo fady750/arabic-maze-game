@@ -159,12 +159,12 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                       className="max-w-full max-h-full object-contain drop-shadow-lg"
                     />
                   </div>
-                  <div className="text-xl lg:text-2xl text-white font-black text-center leading-relaxed shrink-0">
+                  <div className="text-3xl lg:text-5xl text-white font-black text-center leading-relaxed shrink-0">
                     {currentQuestion.questionText}
                   </div>
                 </>
               ) : (
-                <div className="text-2xl lg:text-3xl text-white font-black text-center leading-relaxed p-4">
+                <div className="text-4xl lg:text-6xl text-white font-black text-center leading-relaxed p-4">
                   {currentQuestion.questionText}
                 </div>
               )}

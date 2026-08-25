@@ -640,6 +640,19 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
           } else {
             gameAudio.playWrong();
             onWrong(wordInRoom);
+            
+            // Teleport back to center on wrong answer
+            player.x = 9 * cellSize + cellSize / 2;
+            player.y = 9 * cellSize + cellSize / 2;
+            player.gridX = 9;
+            player.gridY = 9;
+            player.targetX = 9;
+            player.targetY = 9;
+            player.dir = 'down';
+            player.nextDir = 'down';
+            
+            // Give some invincibility frames so they aren't instantly killed if a monster is at the center
+            player.invincibleFrames = Math.max(player.invincibleFrames, 60);
           }
         }
       });
