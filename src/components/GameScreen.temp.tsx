@@ -1,7 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { Heart, ArrowLeft } from 'lucide-react';
-import VolumeUpIcon from '@mui/icons-material/VolumeUp';
-import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import { MazeCanvas } from './MazeCanvas';
 import type { Question } from '../data/questions';
 
@@ -35,30 +33,6 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   const [shuffledWords, setShuffledWords] = useState<string[]>([]);
   const [lastIndex, setLastIndex] = useState<number>(-1);
   const [notification, setNotification] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
-
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
-
-  useEffect(() => {
-    if (currentQuestion?.audioUrl) {
-      const timer = setTimeout(() => {
-        if (audioRef.current) {
-          audioRef.current.play().catch(e => console.log('Autoplay prevented:', e));
-        }
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [currentQuestionIndex, currentQuestion?.audioUrl]);
-
-  const toggleAudio = () => {
-    if (!audioRef.current) return;
-    if (isPlayingAudio) {
-      audioRef.current.pause();
-    } else {
-      audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(e => console.log('Play prevented:', e));
-    }
-  };
   
   // Touch pad external direction input
   const extDir = null;
@@ -167,34 +141,6 @@ export const GameScreen: React.FC<GameScreenProps> = ({
               ) : (
                 <div className="text-2xl lg:text-3xl text-white font-black text-center leading-relaxed p-4">
                     {currentQuestion.questionText}
-                </div>
-              )}
-
-              {/* Optional Audio */}
-              {currentQuestion.audioUrl && (
-                <div className="w-full shrink-0 flex items-center justify-center mt-3 lg:mt-5">
-                  <audio
-                    ref={audioRef}
-                    src={currentQuestion.audioUrl}
-                    onPlay={() => setIsPlayingAudio(true)}
-                    onPause={() => setIsPlayingAudio(false)}
-                    onEnded={() => setIsPlayingAudio(false)}
-                    className="hidden"
-                  />
-                  <button
-                    onClick={toggleAudio}
-                    style={{ background: 'transparent', border: 'none', outline: 'none' }}
-                    className={`appearance-none bg-transparent border-none outline-none focus:outline-none shadow-none transition-all duration-300 transform active:scale-90 hover:scale-110 ${isPlayingAudio ? 'translate-y-1 opacity-80' : 'animate-[bounce_2.5s_infinite]'
-                      }`}
-                  >
-                    <div className={`filter drop-shadow-[0_0_20px_rgba(255,255,255,0.5)] transition-transform ${isPlayingAudio ? 'animate-pulse text-[#39ff14]' : 'text-[#ff007f]'}`}>
-                      {isPlayingAudio ? (
-                        <MusicNoteIcon className="!text-[6rem] lg:!text-[10rem]" />
-                      ) : (
-                        <VolumeUpIcon className="!text-[6rem] lg:!text-[10rem]" />
-                      )}
-                    </div>
-                  </button>
                 </div>
               )}
             </div>
