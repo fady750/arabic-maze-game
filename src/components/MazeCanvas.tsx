@@ -36,13 +36,7 @@ const ROOMS = [
   { id: 3, x: 16, y: 16, label: 'أسفل اليمين', color: '#ff007f', glow: 'rgba(255, 0, 127, 0.15)' } // BR
 ];
 
-// 4 Portals — one per answer room, cycling: TL → TR → BR → BL → TL
-const PORTALS = [
-  { id: 0, x: 2, y: 0, targetPortalId: 1, color: '#39ff14', exitX: 2, exitY: 1, exitDir: 'down' }, // TL top wall
-  { id: 1, x: 18, y: 2, targetPortalId: 2, color: '#bd00ff', exitX: 17, exitY: 2, exitDir: 'left' }, // TR right wall
-  { id: 2, x: 16, y: 18, targetPortalId: 3, color: '#ff007f', exitX: 16, exitY: 17, exitDir: 'up' }, // BR bottom wall
-  { id: 3, x: 0, y: 16, targetPortalId: 0, color: '#ff5f00', exitX: 1, exitY: 16, exitDir: 'right' }, // BL left wall
-];
+
 
 interface Monster {
   x: number;
@@ -81,13 +75,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
   const activeRooms = useMemo(() => ROOMS.filter(r => r.id < numWords), [numWords]);
   const cagedRooms = useMemo(() => ROOMS.filter(r => r.id >= numWords), [numWords]);
-  const activePortals = useMemo(() => {
-    const active = PORTALS.filter(p => p.id < numWords).map(p => ({ ...p }));
-    active.forEach((p, i) => {
-      p.targetPortalId = active[(i + 1) % active.length].id;
-    });
-    return active;
-  }, [numWords]);
+
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -136,15 +124,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
   // Local state for wrong room cooldowns to prevent double triggers
   const lastRoomVisitedRef = useRef<{ id: number; time: number } | null>(null);
   const cameraRef = useRef({ x: 9 * 32 + 16, y: 9 * 32 + 16 });
-  const teleportEffectRef = useRef<{
-    fromX: number;
-    fromY: number;
-    toX: number;
-    toY: number;
-    progress: number;
-    maxFrames: number;
-    color: string;
-  } | null>(null);
+
 
   // Joystick state
   const [joystick, setJoystick] = useState<{
@@ -397,9 +377,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
     return null;
   };
 
-  const isPortalCell = (gx: number, gy: number): boolean => {
-    return activePortals.some(p => p.x === gx && p.y === gy);
-  };
+
 
   const isWalkable = (gx: number, gy: number): boolean => {
     if (gx < 0 || gx >= 19 || gy < 0 || gy >= 19) return false;
@@ -407,11 +385,10 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
     // Check if inside a caged room (3x3 area + portal entrance)
     for (const room of cagedRooms) {
       if (Math.abs(gx - room.x) <= 1 && Math.abs(gy - room.y) <= 1) return false;
-      const cagedPortal = PORTALS.find(p => p.id === room.id);
-      if (cagedPortal && gx === cagedPortal.x && gy === cagedPortal.y) return false;
+
     }
 
-    if (isPortalCell(gx, gy)) return true;
+
     return MAZE_GRID[gy][gx] !== 1;
   };
 
@@ -449,43 +426,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         player.gridX = player.targetX;
         player.gridY = player.targetY;
 
-        // Check if player stepped on a portal
-        const steppedPortal = activePortals.find(p => p.x === player.gridX && p.y === player.gridY);
-        if (steppedPortal) {
-          const targetPortal = activePortals.find(p => p.id === steppedPortal.targetPortalId);
-          if (targetPortal) {
-            gameAudio.playTeleport();
 
-            const exitGridX = targetPortal.exitX;
-            const exitGridY = targetPortal.exitY;
-
-            const fromX = player.x;
-            const fromY = player.y;
-
-            player.x = exitGridX * cellSize + cellSize / 2;
-            player.y = exitGridY * cellSize + cellSize / 2;
-            player.gridX = exitGridX;
-            player.gridY = exitGridY;
-            player.targetX = exitGridX;
-            player.targetY = exitGridY;
-            player.dir = targetPortal.exitDir;
-            player.nextDir = targetPortal.exitDir;
-
-            // Invincibility protection
-            player.invincibleFrames = Math.max(player.invincibleFrames, 30);
-
-            // Teleport trail animation setup
-            teleportEffectRef.current = {
-              fromX: fromX,
-              fromY: fromY,
-              toX: player.x,
-              toY: player.y,
-              progress: 0,
-              maxFrames: 25,
-              color: steppedPortal.color
-            };
-          }
-        }
 
         const desiredDir = getDesiredDirection();
         let dX = 0;
@@ -524,7 +465,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
       // Update camera smooth follow with boundary clamping
       const camera = cameraRef.current;
-      const camLerp = teleportEffectRef.current ? 0.22 : 0.1;
+      const camLerp = 0.1;
       camera.x += (player.x - camera.x) * camLerp;
       camera.y += (player.y - camera.y) * camLerp;
 
@@ -698,13 +639,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         }
       });
 
-      // 5. Update teleport effect
-      if (teleportEffectRef.current) {
-        teleportEffectRef.current.progress++;
-        if (teleportEffectRef.current.progress >= teleportEffectRef.current.maxFrames) {
-          teleportEffectRef.current = null;
-        }
-      }
+
     };
 
     const drawGame = () => {
@@ -770,11 +705,10 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
           // Dynamically turn caged rooms into walls
           for (const room of cagedRooms) {
             if (Math.abs(c - room.x) <= 1 && Math.abs(r - room.y) <= 1) isWall = true;
-            const cagedPortal = PORTALS.find(p => p.id === room.id);
-            if (cagedPortal && c === cagedPortal.x && r === cagedPortal.y) isWall = true;
+
           }
 
-          if (isWall && !isPortalCell(c, r)) {
+          if (isWall) {
             const x = c * cellSize;
             const y = r * cellSize;
             
@@ -820,145 +754,6 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
             ctx.shadowBlur = 0; // Reset
           }
         }
-      }
-
-      // 2.5 Draw Galaxy Portals
-      const now = Date.now();
-      activePortals.forEach((portal) => {
-        const px = portal.x * cellSize + cellSize / 2;
-        const py = portal.y * cellSize + cellSize / 2;
-        const baseAngle = (now / 600) % (Math.PI * 2);
-        const radius = cellSize / 2;
-
-        ctx.save();
-
-        // Clip to circle so everything stays within the portal
-        ctx.beginPath();
-        ctx.arc(px, py, radius, 0, Math.PI * 2);
-        ctx.clip();
-
-        // Deep space background
-        const bgGrad = ctx.createRadialGradient(px, py, 0, px, py, radius);
-        bgGrad.addColorStop(0, '#0a0015');
-        bgGrad.addColorStop(0.6, '#050010');
-        bgGrad.addColorStop(1, '#000000');
-        ctx.fillStyle = bgGrad;
-        ctx.fillRect(px - radius, py - radius, radius * 2, radius * 2);
-
-        // Nebula glow cloud (rotating colored haze)
-        for (let layer = 0; layer < 3; layer++) {
-          const layerAngle = baseAngle * (0.8 + layer * 0.3) + layer * 1.2;
-          const nebulaGrad = ctx.createRadialGradient(
-            px + Math.cos(layerAngle) * radius * 0.25,
-            py + Math.sin(layerAngle) * radius * 0.25,
-            0,
-            px, py, radius * 0.9
-          );
-          const alpha = 0.12 + Math.sin(now / 400 + layer) * 0.04;
-          nebulaGrad.addColorStop(0, portal.color + Math.floor(alpha * 255).toString(16).padStart(2, '0'));
-          nebulaGrad.addColorStop(1, 'transparent');
-          ctx.fillStyle = nebulaGrad;
-          ctx.fillRect(px - radius, py - radius, radius * 2, radius * 2);
-        }
-
-        // Spiral arms (galaxy shape)
-        ctx.strokeStyle = portal.color;
-        ctx.lineWidth = 1;
-        ctx.globalAlpha = 0.5;
-        for (let arm = 0; arm < 2; arm++) {
-          ctx.beginPath();
-          for (let t = 0; t < 60; t++) {
-            const tt = t / 60;
-            const spiralR = tt * radius * 0.9;
-            const spiralAngle = baseAngle + arm * Math.PI + tt * Math.PI * 3;
-            const sx = px + Math.cos(spiralAngle) * spiralR;
-            const sy = py + Math.sin(spiralAngle) * spiralR;
-            if (t === 0) ctx.moveTo(sx, sy);
-            else ctx.lineTo(sx, sy);
-          }
-          ctx.stroke();
-        }
-        ctx.globalAlpha = 1;
-
-        // Orbiting star particles
-        const starCount = 18;
-        for (let i = 0; i < starCount; i++) {
-          const seed = i * 137.508; // golden angle spread
-          const orbitR = (radius * 0.15) + ((i / starCount) * radius * 0.75);
-          const speed = 0.0008 + (i % 5) * 0.0003;
-          const starAngle = baseAngle * (1 + i * 0.05) + seed;
-          const sx = px + Math.cos(starAngle) * orbitR;
-          const sy = py + Math.sin(starAngle) * orbitR;
-          const starSize = 0.6 + Math.sin(now * speed + seed) * 0.4;
-          const brightness = 0.6 + Math.sin(now / 200 + seed) * 0.4;
-
-          ctx.fillStyle = `rgba(255, 255, 255, ${brightness})`;
-          ctx.beginPath();
-          ctx.arc(sx, sy, starSize, 0, Math.PI * 2);
-          ctx.fill();
-        }
-
-        // Bright galaxy core
-        const coreGrad = ctx.createRadialGradient(px, py, 0, px, py, radius * 0.3);
-        coreGrad.addColorStop(0, 'rgba(255, 255, 255, 0.6)');
-        coreGrad.addColorStop(0.3, portal.color + '66');
-        coreGrad.addColorStop(1, 'transparent');
-        ctx.fillStyle = coreGrad;
-        ctx.beginPath();
-        ctx.arc(px, py, radius * 0.3, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.restore(); // un-clip
-
-        // Outer ring glow
-        ctx.save();
-        ctx.shadowColor = portal.color;
-        ctx.shadowBlur = 14;
-        ctx.strokeStyle = portal.color;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(px, py, radius - 1, 0, Math.PI * 2);
-        ctx.stroke();
-
-        // Pulsing outer ring
-        const pulse = 0.4 + Math.sin(now / 300) * 0.3;
-        ctx.strokeStyle = portal.color + Math.floor(pulse * 255).toString(16).padStart(2, '0');
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.arc(px, py, radius + 2 + Math.sin(now / 200) * 1.5, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.shadowBlur = 0;
-        ctx.restore();
-      });
-
-      // 2.6 Draw Teleport Laser Effect
-      if (teleportEffectRef.current) {
-        const { fromX, fromY, toX, toY, progress, maxFrames, color } = teleportEffectRef.current;
-        const ratio = progress / maxFrames;
-
-        ctx.save();
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 4 * (1 - ratio);
-        ctx.shadowColor = color;
-        ctx.shadowBlur = 15;
-
-        ctx.beginPath();
-        ctx.moveTo(fromX, fromY);
-        ctx.lineTo(toX, toY);
-        ctx.stroke();
-
-        // Glowing particles
-        ctx.fillStyle = '#ffffff';
-        const numParticles = 8;
-        for (let i = 0; i < numParticles; i++) {
-          const pRatio = (ratio + i / numParticles) % 1;
-          const px = fromX + (toX - fromX) * pRatio;
-          const py = fromY + (toY - fromY) * pRatio;
-          ctx.beginPath();
-          ctx.arc(px, py, 3 * (1 - ratio), 0, Math.PI * 2);
-          ctx.fill();
-        }
-        ctx.restore();
       }
 
       // 3. Draw Room Words (Arabic connected text support)
