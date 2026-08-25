@@ -25,7 +25,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   onBackToWelcome,
 }) => {
   const currentQuestion = questions[currentQuestionIndex];
-  
+
   // Distribute correct word + 3 distractors randomly
   // To keep it persistent for this question, we memoize it or generate it once.
   // We can use a simple seeded shuffle based on currentQuestionIndex, or state.
@@ -33,7 +33,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   const [shuffledWords, setShuffledWords] = useState<string[]>([]);
   const [lastIndex, setLastIndex] = useState<number>(-1);
   const [notification, setNotification] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
-  
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
@@ -81,11 +81,11 @@ export const GameScreen: React.FC<GameScreenProps> = ({
 
   const handleWrong = (word: string) => {
     onWrongAnswer(word);
-    triggerNotification(`❌ كلمة "${word}" خاطئة! (-20 نقطة)`, 'error');
+    triggerNotification(`❌ كلمة "${word}" خاطئة!`, 'error');
   };
 
   const handleCorrect = () => {
-    triggerNotification('⭐ إجابة صحيحة! أحسنت! (+100 نقطة)', 'success');
+    triggerNotification('⭐ إجابة صحيحة! أحسنت!', 'success');
     onCorrectAnswer();
   };
 
@@ -95,11 +95,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({
       hearts.push(
         <Heart
           key={i}
-          className={`w-6 h-6 transition-all duration-300 ${
-            i < lives
-              ? 'text-[#ff007f] fill-[#ff007f] filter drop-shadow-[0_0_5px_rgba(255,0,127,0.7)]'
-              : 'text-gray-600 fill-transparent'
-          }`}
+          className={`w-6 h-6 transition-all duration-300 ${i < lives
+            ? 'text-[#ff007f] fill-[#ff007f] filter drop-shadow-[0_0_5px_rgba(255,0,127,0.7)]'
+            : 'text-gray-600 fill-transparent'
+            }`}
         />
       );
     }
@@ -108,7 +107,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
 
   return (
     <div className="w-full max-w-[1400px] mx-auto p-2 sm:p-4 flex flex-col items-center justify-start gap-3 h-auto overflow-y-auto lg:h-screen lg:overflow-hidden">
-      
+
       {/* 1. Header panel */}
       <div className="glass-panel w-full flex items-center justify-between px-6 py-3 relative z-10 flex-shrink-0">
         <button
@@ -143,20 +142,20 @@ export const GameScreen: React.FC<GameScreenProps> = ({
 
       {/* 2. Main layout */}
       <div className="flex-1 w-full min-h-0 flex flex-col lg:flex-row items-stretch justify-center gap-6 lg:gap-10 pb-4">
-        
+
         {/* Left Side (Actually Right in RTL): Question Display */}
         <div className="glass-panel w-full lg:w-[320px] p-4 text-center flex flex-col items-center justify-center min-h-0 flex-shrink-0 border border-[#00f0ff]/20 shadow-lg rounded-2xl relative overflow-hidden">
           {/* Question Elements (Text, Image, Audio) */}
           {currentQuestion && (
             <div className="relative z-10 w-full h-full flex flex-col items-center justify-center p-2 gap-3 lg:gap-4">
-              
+
               {/* Optional Image */}
               {currentQuestion.image && (
                 <div className="w-full max-h-[20vh] lg:flex-1 lg:max-h-none min-h-0 flex items-center justify-center">
                   <img
-                      src={currentQuestion.image}
-                      alt="سؤال المتاهة"
-                      className="max-w-full max-h-full object-contain drop-shadow-lg rounded-lg"
+                    src={currentQuestion.image}
+                    alt="سؤال المتاهة"
+                    className="max-w-full max-h-full object-contain drop-shadow-lg rounded-lg"
                   />
                 </div>
               )}
@@ -164,14 +163,14 @@ export const GameScreen: React.FC<GameScreenProps> = ({
               {/* Optional Text */}
               {currentQuestion.questionText && currentQuestion.questionText !== 'بدون سؤال' && (
                 <div className={`${currentQuestion.image ? 'text-lg lg:text-2xl shrink-0' : 'text-2xl lg:text-3xl'} text-white font-black text-center leading-relaxed px-2`}>
-                    {currentQuestion.questionText}
+                  {currentQuestion.questionText}
                 </div>
               )}
 
               {/* Optional Audio */}
               {currentQuestion.audioUrl && (
                 <div className="w-full shrink-0 flex items-center justify-center mt-3 lg:mt-5">
-                  <audio 
+                  <audio
                     ref={audioRef}
                     src={currentQuestion.audioUrl}
                     onPlay={() => setIsPlayingAudio(true)}
@@ -179,20 +178,14 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                     onEnded={() => setIsPlayingAudio(false)}
                     className="hidden"
                   />
-                  <button 
+                  <button
                     onClick={toggleAudio}
-                    className={`relative overflow-hidden group flex items-center justify-center gap-3 px-8 py-4 lg:py-5 rounded-[2.5rem] transition-all duration-300 transform active:scale-90 border-b-8 ${
-                      isPlayingAudio 
-                        ? 'bg-gradient-to-r from-[#39ff14] to-[#00f0ff] border-[#20aa0c] text-black shadow-xl translate-y-2' 
-                        : 'bg-gradient-to-r from-[#ff007f] to-[#ff5e00] border-[#a00050] text-white hover:-translate-y-1 shadow-[0_8px_25px_rgba(255,0,127,0.5)] hover:shadow-[0_12px_30px_rgba(255,0,127,0.7)] animate-[bounce_2.5s_infinite]'
+                    className={`transition-all duration-300 transform active:scale-90 hover:scale-110 ${
+                      isPlayingAudio ? 'translate-y-1 opacity-80' : 'animate-[bounce_2.5s_infinite]'
                     }`}
                   >
-                    <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity rounded-[2.5rem]"></div>
-                    <span className={`text-4xl lg:text-5xl filter drop-shadow-md transition-transform ${isPlayingAudio ? 'animate-pulse scale-110' : 'group-hover:scale-110'}`}>
+                    <span className={`text-6xl lg:text-7xl filter drop-shadow-2xl transition-transform ${isPlayingAudio ? 'animate-pulse' : ''}`}>
                       {isPlayingAudio ? '🎶' : '🔊'}
-                    </span>
-                    <span className="font-black text-2xl lg:text-3xl filter drop-shadow-sm tracking-wide z-10 relative">
-                      {isPlayingAudio ? 'جاري التشغيل...' : 'إضغط لتسمع!'}
                     </span>
                   </button>
                 </div>
@@ -207,11 +200,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           {/* Toast Notification overlay */}
           {notification && (
             <div
-              className={`absolute top-4 px-6 py-3 rounded-full font-black text-white shadow-lg transition-all duration-300 z-20 ${
-                notification.type === 'success'
-                  ? 'bg-emerald-600/90 border border-emerald-400 neon-border-cyan'
-                  : 'bg-rose-600/90 border border-rose-400 animate-shake neon-border-pink'
-              }`}
+              className={`absolute top-4 px-6 py-3 rounded-full font-black text-white shadow-lg transition-all duration-300 z-20 ${notification.type === 'success'
+                ? 'bg-emerald-600/90 border border-emerald-400 neon-border-cyan'
+                : 'bg-rose-600/90 border border-rose-400 animate-shake neon-border-pink'
+                }`}
             >
               {notification.text}
             </div>
