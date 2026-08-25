@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Heart, ArrowLeft } from 'lucide-react';
+import VolumeUpIcon from '@mui/icons-material/VolumeUp';
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import { MazeCanvas } from './MazeCanvas';
 import type { Question } from '../data/questions';
 
@@ -184,9 +186,13 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                     className={`appearance-none bg-transparent border-none outline-none focus:outline-none shadow-none transition-all duration-300 transform active:scale-90 hover:scale-110 ${isPlayingAudio ? 'translate-y-1 opacity-80' : 'animate-[bounce_2.5s_infinite]'
                       }`}
                   >
-                    <span className={`block text-6xl lg:text-[7rem] leading-none filter drop-shadow-2xl transition-transform ${isPlayingAudio ? 'animate-pulse' : ''}`}>
-                      {isPlayingAudio ? '🎶' : '🔊'}
-                    </span>
+                    <div className={`filter drop-shadow-[0_0_20px_rgba(255,255,255,0.5)] transition-transform ${isPlayingAudio ? 'animate-pulse text-[#39ff14]' : 'text-[#ff007f]'}`}>
+                      {isPlayingAudio ? (
+                        <MusicNoteIcon className="!text-[6rem] lg:!text-[10rem]" />
+                      ) : (
+                        <VolumeUpIcon className="!text-[6rem] lg:!text-[10rem]" />
+                      )}
+                    </div>
                   </button>
                 </div>
               )}
