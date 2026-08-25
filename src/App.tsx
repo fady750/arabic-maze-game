@@ -278,7 +278,7 @@ function App() {
   }
 
   return (
-    <div className="w-screen min-h-screen overflow-x-hidden flex items-center justify-center">
+    <div className="w-screen h-[100dvh] overflow-hidden flex items-center justify-center bg-[#0a0a2a]">
       {view === 'welcome' && (
         <WelcomeScreen onStart={handleStartGame} />
       )}

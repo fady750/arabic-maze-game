@@ -202,7 +202,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         </div>
 
         {/* Center: Maze Board */}
-        <div className="relative flex-1 flex flex-col items-center justify-center w-full h-full min-h-0 min-w-0 flex-shrink-0">
+        <div className="relative flex-1 flex flex-col items-center justify-center w-full h-full min-h-0 min-w-0">
           {/* Toast Notification overlay */}
           {notification && (
             <div

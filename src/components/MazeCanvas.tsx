@@ -1121,10 +1121,8 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       className="relative flex justify-center items-center rounded-2xl overflow-hidden shadow-[0_0_40px_rgba(0,240,255,0.15)] bg-[#030712] border-2 border-[#1e3a8a]/50 touch-none select-none"
       style={{
         aspectRatio: '1/1',
-        width: '100%',
-        height: 'auto',
+        maxHeight: '100%',
         maxWidth: '100%',
-        maxHeight: '100%'
       }}
     >
       <canvas
