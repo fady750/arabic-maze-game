@@ -23,20 +23,17 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
         <div className="mb-8 relative">
           <Gamepad2 className="w-16 h-16 text-[#00f0ff] mb-2 mx-auto filter drop-shadow-[0_0_8px_rgba(0,240,255,0.8)]" />
           <h1 className="text-4xl md:text-5xl font-black tracking-tight text-white mb-2 text-glow-cyan">
-            متاهة الكلمات
+            مَتَاهَةُ الكَلِمَاتْ
           </h1>
-          <p className="text-[#00f0ff] font-semibold text-lg tracking-wide uppercase">
-            تحدي الذكاء والسرعة 👾🎮
-          </p>
         </div>
 
         {/* Description / Instructions */}
-        <div className="space-y-4 text-right w-full mb-8 text-gray-300">
+        {/* <div className="space-y-4 text-right w-full mb-8 text-gray-300">
           <h3 className="text-xl font-bold text-white mb-3 flex items-center justify-start gap-2 border-b border-gray-700 pb-2">
             <HelpCircle className="w-5 h-5 text-[#ff007f]" />
             طريقة اللعب:
           </h3>
-          
+
           <div className="flex items-start gap-3 justify-start">
             <span className="text-[#39ff14] text-xl">◀</span>
             <p className="leading-relaxed">
@@ -71,7 +68,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
               <strong>التحكم:</strong> استخدم الأسهم <span className="text-[#00f0ff]">↑ ↓ ← →</span> أو أزرار <span className="text-[#00f0ff]">W A S D</span> للحركة. أو استخدم أزرار التحكم على الشاشة.
             </p>
           </div>
-        </div>
+        </div> */}
 
         {/* Start Button */}
         <button
@@ -79,7 +76,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
           className="game-btn px-10 py-4 text-xl flex items-center gap-3 w-full max-w-xs pulse-glow-cyan"
         >
           <Play className="w-6 h-6 fill-current" />
-          ابدأ اللعب الآن
+          إِِبْدَأْ اللَعِبَ الأَن
         </button>
       </div>
     </div>

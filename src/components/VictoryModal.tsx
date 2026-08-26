@@ -22,7 +22,7 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
     if (!isSubmitting) {
       // Play sound and trigger confetti
       gameAudio.playVictory();
-      
+
       // Confetti burst
       const duration = 3 * 1000;
       const end = Date.now() + duration;
@@ -68,7 +68,7 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
           <h2 className="text-2xl font-black text-white text-glow-cyan animate-pulse">
             جاري حفظ إنجازاتك...
           </h2>
-          <p className="text-gray-400 mt-2">أنت بطل رائع!</p>
+          <p className="text-gray-400 mt-2">أنت بطل !</p>
         </div>
       </div>
     );
@@ -90,35 +90,35 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
         </div>
 
         <h2 className="text-3xl font-black text-white mb-2 text-glow-green">
-          أحسنت يا بطل!
+          مَبْرُوكْ
         </h2>
         <p className="text-gray-300 mb-6 text-lg font-medium">
-          لقد أنهيت المتاهة بنجاح ساحق!
+          أَنتَ بَطَلٌ
         </p>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-3 mb-8">
           <div className="bg-slate-900/80 p-3 rounded-xl border border-gray-700 flex flex-col items-center justify-center transform transition hover:scale-105">
             <Trophy className="w-6 h-6 text-[#00f0ff] mb-1" />
-            <span className="text-xs text-gray-400 block mb-1">النقاط</span>
+            <span className="text-xs text-gray-400 block mb-1">النّقَاطُ</span>
             <span className="text-2xl font-black text-[#00f0ff]">{finalScore}</span>
           </div>
 
           <div className="bg-slate-900/80 p-3 rounded-xl border border-gray-700 flex flex-col items-center justify-center transform transition hover:scale-105">
             <Star className="w-6 h-6 text-[#fff01f] mb-1" />
-            <span className="text-xs text-gray-400 block mb-1">النجوم</span>
+            <span className="text-xs text-gray-400 block mb-1">النّجُومُ</span>
             <span className="text-2xl font-black text-[#fff01f]">{stars}</span>
           </div>
 
           <div className="bg-slate-900/80 p-3 rounded-xl border border-gray-700 flex flex-col items-center justify-center transform transition hover:scale-105">
             <Coins className="w-6 h-6 text-yellow-500 mb-1" />
-            <span className="text-xs text-gray-400 block mb-1">العملات</span>
+            <span className="text-xs text-gray-400 block mb-1">فِلُوس</span>
             <span className="text-2xl font-black text-yellow-500">{coins}</span>
           </div>
 
           <div className="bg-slate-900/80 p-3 rounded-xl border border-gray-700 flex flex-col items-center justify-center transform transition hover:scale-105">
             <Zap className="w-6 h-6 text-[#ff007f] mb-1" />
-            <span className="text-xs text-gray-400 block mb-1">الخبرة</span>
+            <span className="text-xs text-gray-400 block mb-1">الخِبْرَةُ</span>
             <span className="text-2xl font-black text-[#ff007f]">{xp}</span>
           </div>
         </div>
@@ -130,15 +130,15 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
             className="game-btn w-full flex items-center justify-center gap-2 py-4 text-xl font-bold rounded-2xl"
           >
             <RotateCcw className="w-6 h-6" />
-            العب مرة أخرى
+            إِلعَبْ ثَانِيةً
           </button>
-          
+
           <button
             onClick={handleHome}
             className="w-full bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-white font-bold py-3 px-6 rounded-xl flex items-center justify-center gap-2 transition-all"
           >
             <Home className="w-5 h-5" />
-            الشاشة الرئيسية
+            ارْجِعْ
           </button>
         </div>
       </div>
