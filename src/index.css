@@ -17,9 +17,8 @@
   --neon-purple: #bd00ff;
   --neon-orange: #ff5f00;
 
-  /* Font styling */
   color-scheme: dark;
-  font-synthesis: none;
+  font-synthesis: weight;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
