@@ -1,5 +1,5 @@
 import React from 'react';
-import { Gamepad2, Play, HelpCircle } from 'lucide-react';
+import { Gamepad2, Play } from 'lucide-react';
 import { gameAudio } from '../utils/audio';
 
 interface WelcomeScreenProps {
