@@ -937,6 +937,22 @@ body {
   .md\:text-8xl {
     font-size: 8rem;
   }
+
+  .md\:max-w-xl {
+    max-width: 36rem;
+  }
+
+  .md\:max-w-2xl {
+    max-width: 42rem;
+  }
+
+  .md\:grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .md\:gap-6 {
+    gap: 1.5rem;
+  }
 }
 
 @media (min-width: 1024px) {
@@ -1010,6 +1026,14 @@ body {
 
   .lg\:text-6xl {
     font-size: 5.5rem;
+  }
+
+  .lg\:max-w-2xl {
+    max-width: 42rem;
+  }
+
+  .lg\:max-w-4xl {
+    max-width: 56rem;
   }
 }
 
