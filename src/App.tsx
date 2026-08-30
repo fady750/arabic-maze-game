@@ -100,7 +100,11 @@ function App() {
 
             if (isOptionsFormat) {
               questionText = q.question || 'بدون سؤال';
-              choicesArr = q.options || [];
+              try {
+                choicesArr = typeof q.options === 'string' ? JSON.parse(q.options) : (q.options || []);
+              } catch (e) {
+                choicesArr = [];
+              }
               word = q.correctAnswer || 'إجابة';
               image = q.imageUrl || q.image || null;
               audio = q.audioUrl || null;
@@ -109,7 +113,11 @@ function App() {
               distractors = mappedChoices.filter((t: string) => t !== word);
             } else if (isAnswerFormat) {
               questionText = q.questionTitle || 'بدون سؤال';
-              choicesArr = q.choices || [];
+              try {
+                choicesArr = typeof q.choices === 'string' ? JSON.parse(q.choices) : (q.choices || []);
+              } catch (e) {
+                choicesArr = [];
+              }
               word = q.correctAnswer || 'إجابة';
               image = q.image || null;
 
