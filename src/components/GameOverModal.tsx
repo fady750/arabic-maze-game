@@ -27,7 +27,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade-in">
-      <div className="glass-panel w-full max-w-md p-8 text-center border-[#ff007f] relative overflow-hidden neon-border-pink">
+      <div className="glass-panel w-full max-w-md p-8 text-center border-[#ff007f] relative overflow-hidden neon-border-pink short:scale-80">
         <div className="absolute -top-10 -left-10 w-20 h-20 bg-pink-600 rounded-full filter blur-xl opacity-20 animate-pulse"></div>
 
         <AlertTriangle className="w-16 h-16 text-[#ff007f] mx-auto mb-4 filter drop-shadow-[0_0_8px_rgba(255,0,127,0.8)]" />

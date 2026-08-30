@@ -81,7 +81,7 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-50">
-      <div className="glass-panel w-full max-w-md md:max-w-2xl lg:max-w-4xl p-8 md:p-12 lg:p-16 text-center border-[#39ff14] relative overflow-hidden neon-border-cyan">
+      <div className="glass-panel w-full max-w-md md:max-w-2xl lg:max-w-4xl p-8 md:p-12 lg:p-16 text-center border-[#39ff14] relative overflow-hidden neon-border-cyan short:scale-80">
         <div className="absolute -top-10 -right-10 w-24 h-24 md:w-48 md:h-48 bg-teal-500 rounded-full filter blur-xl opacity-20 animate-pulse"></div>
 
         <div className="relative inline-block mb-4 mt-2">

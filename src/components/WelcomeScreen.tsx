@@ -14,7 +14,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
 
   return (
     <div className="flex flex-col items-center justify-center p-6 min-h-screen w-full">
-      <div className="glass-panel w-full max-w-xl p-8 text-center flex flex-col items-center relative overflow-hidden animate-float">
+      <div className="glass-panel w-full max-w-xl p-8 text-center flex flex-col items-center relative overflow-hidden animate-float short:scale-80">
         {/* Floating background blobs */}
         <div className="absolute -top-10 -left-10 w-24 h-24 bg-indigo-500 rounded-full filter blur-xl opacity-20"></div>
         <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-pink-500 rounded-full filter blur-xl opacity-20"></div>
