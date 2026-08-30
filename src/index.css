@@ -1,6 +1,6 @@
 :root {
-  --font-cairo: 'Cairo', 'Tajawal', system-ui, -apple-system, sans-serif;
-  --font-tajawal: 'Tajawal', 'Cairo', system-ui, -apple-system, sans-serif;
+  --font-cairo: 'FontGame', 'Cairo', 'Tajawal', system-ui, sans-serif;
+  --font-tajawal: 'FontGame', 'Tajawal', 'Cairo', system-ui, sans-serif;
 
   /* Color Palette */
   --bg-dark: #0a0d1a;
@@ -25,9 +25,12 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-
-
-
+@font-face {
+  font-family: 'FontGame';
+  src: url('./assets/FontGame.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
 
 * {
   box-sizing: border-box;

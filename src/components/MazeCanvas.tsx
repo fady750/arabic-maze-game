@@ -863,7 +863,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       // 3. Draw Room Words (Arabic connected text support)
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.font = 'bold 18px Cairo';
+      ctx.font = 'bold 18px FontGame';
 
       // Room colored floor glow
       activeRooms.forEach((room) => {
@@ -872,12 +872,12 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
         // Draw shadow/glow behind word
         ctx.fillStyle = '#000000';
-        ctx.font = 'bold 19px Cairo';
+        ctx.font = 'bold 19px FontGame';
         ctx.fillText(words[room.id] || '', textX + 1, textY + 1);
 
         // Draw word text
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 18px Cairo';
+        ctx.font = 'bold 18px FontGame';
         ctx.fillText(words[room.id] || '', textX, textY);
       });
 
