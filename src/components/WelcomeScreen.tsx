@@ -22,7 +22,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
         {/* Title */}
         <div className="mb-8 relative">
           <Gamepad2 className="w-16 h-16 text-[#00f0ff] mb-2 mx-auto filter drop-shadow-[0_0_8px_rgba(0,240,255,0.8)]" />
-          <h1 className="text-6xl md:text-8xl font-black tracking-tight text-white mb-2 text-glow-cyan">
+          <h1 className="text-4xl md:text-5xl font-black tracking-tight text-white mb-2 text-glow-cyan">
             مَتَاهَةُ الكَلِمَاتْ
           </h1>
         </div>
