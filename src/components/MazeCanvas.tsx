@@ -254,16 +254,10 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
     }
   }, [cagedRooms]);
 
-  const activeDPadDirRef = useRef<string | null>(null);
-
   // D-Pad handlers
   const handleDPadStart = (dir: string) => {
     if (isPaused || lives <= 0) return;
-    activeDPadDirRef.current = dir;
-  };
-
-  const handleDPadEnd = () => {
-    activeDPadDirRef.current = null;
+    playerRef.current.nextDir = dir as any;
   };
 
   const cellSize = 32;
@@ -344,7 +338,6 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
   }, [words]);
 
   const externalDirectionRef = useRef<string | null>(null);
-  const keysPressedRef = useRef<{ [key: string]: boolean }>({});
 
   // Sync external direction (touch/mouse hold)
   useEffect(() => {
@@ -352,54 +345,26 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
   }, [externalDirection]);
 
   // Handle keyboard inputs with held down tracking
+  // Handle keyboard inputs
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (isPaused || lives <= 0) return;
-
-      const trackedKeys = ['ArrowUp', 'w', 'W', 'ArrowDown', 's', 'S', 'ArrowLeft', 'a', 'A', 'ArrowRight', 'd', 'D'];
-      if (trackedKeys.includes(e.key)) {
-        e.preventDefault();
+      let dir: string | null = null;
+      if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') dir = 'up';
+      if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') dir = 'down';
+      if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') dir = 'left';
+      if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') dir = 'right';
+      
+      if (dir && !isPaused && lives > 0) {
+        playerRef.current.nextDir = dir as any;
       }
-
-      keysPressedRef.current[e.key] = true;
-    };
-
-    const handleKeyUp = (e: KeyboardEvent) => {
-      keysPressedRef.current[e.key] = false;
-    };
-
-    const handleBlur = () => {
-      keysPressedRef.current = {};
-      externalDirectionRef.current = null;
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
-    window.addEventListener('blur', handleBlur);
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-      window.removeEventListener('blur', handleBlur);
     };
   }, [isPaused, lives]);
-
-  const getDesiredDirection = (): string | null => {
-    if (activeDPadDirRef.current) {
-      return activeDPadDirRef.current;
-    }
-    if (externalDirectionRef.current) {
-      return externalDirectionRef.current;
-    }
-    const keys = keysPressedRef.current;
-    if (keys['ArrowUp'] || keys['w'] || keys['W']) return 'up';
-    if (keys['ArrowDown'] || keys['s'] || keys['S']) return 'down';
-    if (keys['ArrowLeft'] || keys['a'] || keys['A']) return 'left';
-    if (keys['ArrowRight'] || keys['d'] || keys['D']) return 'right';
-    return null;
-  };
-
-
 
   const isWalkable = (gx: number, gy: number): boolean => {
     if (gx < 0 || gx >= 19 || gy < 0 || gy >= 19) return false;
@@ -463,36 +428,37 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
           player.invincibleFrames = Math.max(player.invincibleFrames, 30);
         }
 
-        const desiredDir = getDesiredDirection();
+        const tryMove = (testDir: string) => {
+          if (testDir === 'up' && isWalkable(player.gridX, player.gridY - 1)) return { dx: 0, dy: -1 };
+          if (testDir === 'down' && isWalkable(player.gridX, player.gridY + 1)) return { dx: 0, dy: 1 };
+          if (testDir === 'left' && isWalkable(player.gridX - 1, player.gridY)) return { dx: -1, dy: 0 };
+          if (testDir === 'right' && isWalkable(player.gridX + 1, player.gridY)) return { dx: 1, dy: 0 };
+          return null;
+        };
+
         let dX = 0;
         let dY = 0;
-
-        if (desiredDir) {
-          if (desiredDir === 'up' && isWalkable(player.gridX, player.gridY - 1)) {
-            dY = -1;
-            player.facingDir = 'up';
-          }
-          else if (desiredDir === 'down' && isWalkable(player.gridX, player.gridY + 1)) {
-            dY = 1;
-            player.facingDir = 'down';
-          }
-          else if (desiredDir === 'left' && isWalkable(player.gridX - 1, player.gridY)) {
-            dX = -1;
-            player.facingDir = 'left';
-          }
-          else if (desiredDir === 'right' && isWalkable(player.gridX + 1, player.gridY)) {
-            dX = 1;
-            player.facingDir = 'right';
-          }
-
-          if (dX !== 0 || dY !== 0) {
-            player.dir = desiredDir;
-            player.targetX = player.gridX + dX;
-            player.targetY = player.gridY + dY;
-            gameAudio.playMove();
+        
+        let move = tryMove(player.nextDir);
+        if (move) {
+          player.dir = player.nextDir;
+          dX = move.dx;
+          dY = move.dy;
+        } else {
+          move = tryMove(player.dir);
+          if (move) {
+            dX = move.dx;
+            dY = move.dy;
           } else {
             player.dir = 'none';
           }
+        }
+
+        if (dX !== 0 || dY !== 0) {
+          player.facingDir = player.dir as any;
+          player.targetX = player.gridX + dX;
+          player.targetY = player.gridY + dY;
+          gameAudio.playMove();
         } else {
           player.dir = 'none';
         }
@@ -1001,10 +967,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         <button 
           className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-16 bg-[#1e3a8a]/80 backdrop-blur-md rounded-xl flex items-center justify-center active:bg-[#00f0ff]/80 active:scale-90 pointer-events-auto shadow-[0_0_15px_rgba(0,240,255,0.4)] border-2 border-[#00f0ff] transition-all"
           onTouchStart={(e) => { e.preventDefault(); handleDPadStart('up'); }}
-          onTouchEnd={handleDPadEnd}
           onMouseDown={(e) => { e.preventDefault(); handleDPadStart('up'); }}
-          onMouseUp={handleDPadEnd}
-          onMouseLeave={handleDPadEnd}
         >
           <div className="w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-b-[18px] border-b-white"></div>
         </button>
@@ -1012,10 +975,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         <button 
           className="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-16 bg-[#1e3a8a]/80 backdrop-blur-md rounded-xl flex items-center justify-center active:bg-[#00f0ff]/80 active:scale-90 pointer-events-auto shadow-[0_0_15px_rgba(0,240,255,0.4)] border-2 border-[#00f0ff] transition-all"
           onTouchStart={(e) => { e.preventDefault(); handleDPadStart('down'); }}
-          onTouchEnd={handleDPadEnd}
           onMouseDown={(e) => { e.preventDefault(); handleDPadStart('down'); }}
-          onMouseUp={handleDPadEnd}
-          onMouseLeave={handleDPadEnd}
         >
           <div className="w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[18px] border-t-white"></div>
         </button>
@@ -1023,10 +983,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         <button 
           className="absolute top-1/2 left-0 -translate-y-1/2 w-16 h-16 bg-[#1e3a8a]/80 backdrop-blur-md rounded-xl flex items-center justify-center active:bg-[#00f0ff]/80 active:scale-90 pointer-events-auto shadow-[0_0_15px_rgba(0,240,255,0.4)] border-2 border-[#00f0ff] transition-all"
           onTouchStart={(e) => { e.preventDefault(); handleDPadStart('left'); }}
-          onTouchEnd={handleDPadEnd}
           onMouseDown={(e) => { e.preventDefault(); handleDPadStart('left'); }}
-          onMouseUp={handleDPadEnd}
-          onMouseLeave={handleDPadEnd}
         >
           <div className="w-0 h-0 border-y-[12px] border-y-transparent border-r-[18px] border-r-white"></div>
         </button>
@@ -1034,10 +991,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         <button 
           className="absolute top-1/2 right-0 -translate-y-1/2 w-16 h-16 bg-[#1e3a8a]/80 backdrop-blur-md rounded-xl flex items-center justify-center active:bg-[#00f0ff]/80 active:scale-90 pointer-events-auto shadow-[0_0_15px_rgba(0,240,255,0.4)] border-2 border-[#00f0ff] transition-all"
           onTouchStart={(e) => { e.preventDefault(); handleDPadStart('right'); }}
-          onTouchEnd={handleDPadEnd}
           onMouseDown={(e) => { e.preventDefault(); handleDPadStart('right'); }}
-          onMouseUp={handleDPadEnd}
-          onMouseLeave={handleDPadEnd}
         >
           <div className="w-0 h-0 border-y-[12px] border-y-transparent border-l-[18px] border-l-white"></div>
         </button>
