@@ -989,8 +989,8 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         className="block max-w-full max-h-full h-auto"
         style={{ imageRendering: 'pixelated' }}
       />
-      {/* D-Pad overlay - Positioned in the bottom left corner for better mobile ergonomics */}
-      <div className="absolute bottom-8 left-8 sm:bottom-12 sm:left-12 w-48 h-48 flex flex-col items-center justify-between z-50 pointer-events-none opacity-85 md:hidden">
+      {/* D-Pad overlay - Positioned in the bottom right corner for better mobile ergonomics */}
+      <div className="absolute bottom-8 right-8 sm:bottom-12 sm:right-12 w-48 h-48 flex flex-col items-center justify-between z-50 pointer-events-none opacity-85 md:hidden">
         {/* Up Button */}
         <button
           className="w-16 h-16 bg-white/30 backdrop-blur-md rounded-2xl flex items-center justify-center active:bg-white/50 active:scale-90 pointer-events-auto shadow-[0_4px_15px_rgba(0,0,0,0.4)] border-2 border-white/40 transition-all"
@@ -1003,9 +1003,9 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
           <ArrowUp className="w-10 h-10 text-white drop-shadow-md" />
         </button>
 
-        {/* Middle Row (Left & Right swapped for RTL) */}
+        {/* Middle Row (Adjusted for RTL layout so left is left and right is right visually) */}
         <div className="w-full flex flex-row justify-between">
-          {/* Right Button (Appears on the right in RTL) */}
+          {/* Right Button (First in DOM = Right side in RTL) */}
           <button
             className="w-16 h-16 bg-white/30 backdrop-blur-md rounded-2xl flex items-center justify-center active:bg-white/50 active:scale-90 pointer-events-auto shadow-[0_4px_15px_rgba(0,0,0,0.4)] border-2 border-white/40 transition-all"
             onTouchStart={(e) => { e.preventDefault(); handleDPadStart('right'); }}
@@ -1017,7 +1017,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
             <ArrowRight className="w-10 h-10 text-white drop-shadow-md" />
           </button>
 
-          {/* Left Button (Appears on the left in RTL) */}
+          {/* Left Button (Second in DOM = Left side in RTL) */}
           <button
             className="w-16 h-16 bg-white/30 backdrop-blur-md rounded-2xl flex items-center justify-center active:bg-white/50 active:scale-90 pointer-events-auto shadow-[0_4px_15px_rgba(0,0,0,0.4)] border-2 border-white/40 transition-all"
             onTouchStart={(e) => { e.preventDefault(); handleDPadStart('left'); }}

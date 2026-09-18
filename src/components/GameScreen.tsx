@@ -109,7 +109,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     <div className="w-full max-w-[1400px] mx-auto p-4 sm:p-6 lg:p-8 flex flex-col items-center justify-start gap-4 lg:gap-8 h-auto overflow-y-auto lg:h-screen lg:overflow-hidden">
 
       {/* 1. Header panel */}
-      <div className="glass-panel w-full flex items-center justify-between px-[32px] py-[24px] relative z-10 ">
+      <div className="glass-panel w-full flex items-center justify-between px-[32px] py-[24px] relative z-10">
         <button
           onClick={onBackToWelcome}
           className="flex items-center gap-2 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all"

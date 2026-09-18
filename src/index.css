@@ -1,4 +1,5 @@
 @import "tailwindcss";
+
 :root {
   --spacing: 0.25rem;
   --font-cairo: 'FontGame', 'Cairo', 'Tajawal', system-ui, sans-serif;
