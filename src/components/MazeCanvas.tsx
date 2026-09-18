@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useMemo } from 'react';
+import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
 import { gameAudio } from '../utils/audio';
 import robotImg from '../assets/robot.png';
 import robotSideImg from '../assets/robot-side.png';
@@ -87,7 +88,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  
+
   const robotImageRef = useRef<HTMLImageElement | null>(null);
   const robotSideRef = useRef<HTMLImageElement | null>(null);
   const robotUpRef = useRef<HTMLImageElement | null>(null);
@@ -128,7 +129,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
   // Monsters state
   const monstersRef = useRef<Monster[]>([]);
-  
+
   // Ghost AI mode: alternates between scatter and chase
   const ghostModeRef = useRef<'scatter' | 'chase'>('scatter');
   const ghostTimerRef = useRef<number>(0);
@@ -164,7 +165,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       bCtx.moveTo(i * cellSize, 0);
       bCtx.lineTo(i * cellSize, 19 * cellSize);
       bCtx.stroke();
-      
+
       bCtx.beginPath();
       bCtx.moveTo(0, i * cellSize);
       bCtx.lineTo(19 * cellSize, i * cellSize);
@@ -176,9 +177,9 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
     bCtx.shadowBlur = 4;
     for (let r = 0; r <= 19; r++) {
       for (let c = 0; c <= 19; c++) {
-         bCtx.beginPath();
-         bCtx.arc(c * cellSize, r * cellSize, 1.5, 0, Math.PI * 2);
-         bCtx.fill();
+        bCtx.beginPath();
+        bCtx.arc(c * cellSize, r * cellSize, 1.5, 0, Math.PI * 2);
+        bCtx.fill();
       }
     }
     bCtx.shadowBlur = 0;
@@ -210,13 +211,13 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         if (isWall) {
           const x = c * cellSize;
           const y = r * cellSize;
-          
+
           // Base wall (dark blue metallic)
-          bCtx.fillStyle = '#0a192f'; 
+          bCtx.fillStyle = '#0a192f';
           bCtx.fillRect(x, y, cellSize, cellSize);
-          
+
           // Inner raised panel
-          bCtx.fillStyle = '#112240'; 
+          bCtx.fillStyle = '#112240';
           bCtx.fillRect(x + 3, y + 3, cellSize - 6, cellSize - 6);
 
           // Sci-fi borders
@@ -228,7 +229,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
           bCtx.strokeStyle = '#00f0ff';
           bCtx.shadowColor = '#00f0ff';
           bCtx.shadowBlur = 5;
-          
+
           bCtx.beginPath();
           bCtx.moveTo(x + 6, y + 1);
           bCtx.lineTo(x + 1, y + 1);
@@ -245,7 +246,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
           if ((r * 13 + c * 7) % 11 === 0) {
             bCtx.shadowBlur = 8;
             bCtx.fillStyle = '#00f0ff';
-            bCtx.fillRect(x + cellSize/2 - 3, y + 3, 6, 2);
+            bCtx.fillRect(x + cellSize / 2 - 3, y + 3, 6, 2);
           }
 
           bCtx.shadowBlur = 0; // Reset
@@ -295,7 +296,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
     let baseSpeed = 1.5; // 75% for level 1
     if (level >= 2 && level <= 4) baseSpeed = 1.7; // 85%
     else if (level >= 5) baseSpeed = 1.9; // 95%
-    
+
     ghostModeRef.current = 'scatter';
     ghostTimerRef.current = Date.now();
 
@@ -403,7 +404,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
   const isWalkable = (gx: number, gy: number): boolean => {
     if (gx < 0 || gx >= 19 || gy < 0 || gy >= 19) return false;
-    
+
     // Check if inside a caged room (3x3 area + portal entrance)
     for (const room of cagedRooms) {
       if (Math.abs(gx - room.x) <= 1 && Math.abs(gy - room.y) <= 1) return false;
@@ -700,7 +701,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
           } else {
             gameAudio.playWrong();
             onWrong(wordInRoom);
-            
+
             // Teleport back to center on wrong answer
             player.x = 9 * cellSize + cellSize / 2;
             player.y = 9 * cellSize + cellSize / 2;
@@ -710,7 +711,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
             player.targetY = 9;
             player.dir = 'down';
             player.nextDir = 'down';
-            
+
             // Give some invincibility frames so they aren't instantly killed if a monster is at the center
             player.invincibleFrames = Math.max(player.invincibleFrames, 60);
           }
@@ -831,7 +832,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       const isInvincible = player.invincibleFrames > 0;
       // Flashing effect during invincibility
       if (!isInvincible || Math.floor(player.invincibleFrames / 5) % 2 === 0) {
-        
+
         // Select the correct image based on direction
         let currentImg = robotDownRef.current; // Default to facing camera
         let flipHorizontal = false;
@@ -946,16 +947,16 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         const p = celebrationRef.current.progress;
         const maxFrames = 75; // 1.25 seconds of celebration zoom
         const ratio = Math.min(p / maxFrames, 1);
-        
+
         // Easing cubic out
         const easeRatio = 1 - Math.pow(1 - ratio, 3);
         cameraRef.current.zoom = 1.8 + (6.0 - 1.8) * easeRatio;
-        
+
         // Pull camera heavily towards player during zoom
         const player = playerRef.current;
         cameraRef.current.x += (player.x - cameraRef.current.x) * 0.15;
         cameraRef.current.y += (player.y - cameraRef.current.y) * 0.15;
-        
+
         if (p >= maxFrames) {
           celebrationRef.current = null;
           cameraRef.current.zoom = 1.8; // reset
@@ -964,7 +965,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       } else {
         updateGame();
       }
-      
+
       drawGame();
       animationId = requestAnimationFrame(runFrame);
     };
@@ -998,7 +999,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       {/* D-Pad overlay - Positioned in the bottom left corner for better mobile ergonomics */}
       <div className="absolute bottom-8 left-8 sm:bottom-12 sm:left-12 w-48 h-48 flex flex-col items-center justify-between z-50 pointer-events-none opacity-85 md:hidden">
         {/* Up Button */}
-        <button 
+        <button
           className="w-16 h-16 bg-white/30 backdrop-blur-md rounded-2xl flex items-center justify-center active:bg-white/50 active:scale-90 pointer-events-auto shadow-[0_4px_15px_rgba(0,0,0,0.4)] border-2 border-white/40 transition-all"
           onTouchStart={(e) => { e.preventDefault(); handleDPadStart('up'); }}
           onTouchEnd={handleDPadEnd}
@@ -1006,13 +1007,13 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
           onMouseUp={handleDPadEnd}
           onMouseLeave={handleDPadEnd}
         >
-          <svg className="w-10 h-10 text-white drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4l-8 10h16z"/></svg>
+          <ArrowUp className="w-10 h-10 text-white drop-shadow-md" />
         </button>
 
         {/* Middle Row (Left & Right swapped for RTL) */}
         <div className="w-full flex flex-row justify-between">
           {/* Right Button (Appears on the right in RTL) */}
-          <button 
+          <button
             className="w-16 h-16 bg-white/30 backdrop-blur-md rounded-2xl flex items-center justify-center active:bg-white/50 active:scale-90 pointer-events-auto shadow-[0_4px_15px_rgba(0,0,0,0.4)] border-2 border-white/40 transition-all"
             onTouchStart={(e) => { e.preventDefault(); handleDPadStart('right'); }}
             onTouchEnd={handleDPadEnd}
@@ -1020,11 +1021,11 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
             onMouseUp={handleDPadEnd}
             onMouseLeave={handleDPadEnd}
           >
-            <svg className="w-10 h-10 text-white drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M20 12l-10 8V4z"/></svg>
+            <ArrowRight className="w-10 h-10 text-white drop-shadow-md" />
           </button>
 
           {/* Left Button (Appears on the left in RTL) */}
-          <button 
+          <button
             className="w-16 h-16 bg-white/30 backdrop-blur-md rounded-2xl flex items-center justify-center active:bg-white/50 active:scale-90 pointer-events-auto shadow-[0_4px_15px_rgba(0,0,0,0.4)] border-2 border-white/40 transition-all"
             onTouchStart={(e) => { e.preventDefault(); handleDPadStart('left'); }}
             onTouchEnd={handleDPadEnd}
@@ -1032,12 +1033,12 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
             onMouseUp={handleDPadEnd}
             onMouseLeave={handleDPadEnd}
           >
-            <svg className="w-10 h-10 text-white drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M4 12l10-8v16z"/></svg>
+            <ArrowLeft className="w-10 h-10 text-white drop-shadow-md" />
           </button>
         </div>
 
         {/* Down Button */}
-        <button 
+        <button
           className="w-16 h-16 bg-white/30 backdrop-blur-md rounded-2xl flex items-center justify-center active:bg-white/50 active:scale-90 pointer-events-auto shadow-[0_4px_15px_rgba(0,0,0,0.4)] border-2 border-white/40 transition-all"
           onTouchStart={(e) => { e.preventDefault(); handleDPadStart('down'); }}
           onTouchEnd={handleDPadEnd}
@@ -1045,7 +1046,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
           onMouseUp={handleDPadEnd}
           onMouseLeave={handleDPadEnd}
         >
-          <svg className="w-10 h-10 text-white drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M12 20l8-10H4z"/></svg>
+          <ArrowDown className="w-10 h-10 text-white drop-shadow-md" />
         </button>
       </div>
     </div>

@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Heart, ArrowLeft } from 'lucide-react';
-import VolumeUpIcon from '@mui/icons-material/VolumeUp';
-import MusicNoteIcon from '@mui/icons-material/MusicNote';
+import { Heart, ArrowLeft, Volume2, Music } from 'lucide-react';
 import { MazeCanvas } from './MazeCanvas';
 import type { Question } from '../data/questions';
 
@@ -108,10 +106,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   };
 
   return (
-    <div className="w-full max-w-[1400px] mx-auto p-2 sm:p-4 flex flex-col items-center justify-start gap-3 h-auto overflow-y-auto lg:h-screen lg:overflow-hidden">
+    <div className="w-full max-w-[1400px] mx-auto p-4 sm:p-6 lg:p-8 flex flex-col items-center justify-start gap-4 lg:gap-8 h-auto overflow-y-auto lg:h-screen lg:overflow-hidden">
 
       {/* 1. Header panel */}
-      <div className="glass-panel w-full flex items-center justify-between px-6 py-3 relative z-10 flex-shrink-0">
+      <div className="glass-panel w-full flex items-center justify-between px-6 py-4 relative z-10 flex-shrink-0">
         <button
           onClick={onBackToWelcome}
           className="flex items-center gap-2 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all"
@@ -143,7 +141,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
       </div>
 
       {/* 2. Main layout */}
-      <div className="flex-1 w-full min-h-0 flex flex-col lg:flex-row items-stretch justify-center gap-6 lg:gap-10 pb-4">
+      <div className="flex-1 w-full min-h-0 flex flex-col lg:flex-row items-stretch justify-center gap-6 lg:gap-12 pb-6">
 
         {/* Left Side (Actually Right in RTL): Question Display */}
         <div className="glass-panel w-full lg:w-[320px] p-4 text-center flex flex-col items-center justify-center min-h-0 flex-shrink-0 border border-[#00f0ff]/20 shadow-lg rounded-2xl relative overflow-hidden">
@@ -188,9 +186,9 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                   >
                     <div className={`filter drop-shadow-[0_0_20px_rgba(255,255,255,0.5)] transition-transform ${isPlayingAudio ? 'animate-pulse text-[#39ff14]' : 'text-[#ff007f]'}`}>
                       {isPlayingAudio ? (
-                        <MusicNoteIcon className="!text-[6rem] lg:!text-[10rem]" />
+                        <Music className="w-24 h-24 lg:w-40 lg:h-40" />
                       ) : (
-                        <VolumeUpIcon className="!text-[6rem] lg:!text-[10rem]" />
+                        <Volume2 className="w-24 h-24 lg:w-40 lg:h-40" />
                       )}
                     </div>
                   </button>
