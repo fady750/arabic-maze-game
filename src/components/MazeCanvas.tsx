@@ -254,10 +254,16 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
     }
   }, [cagedRooms]);
 
-  // D-Pad handler
-  const handleDPad = (dir: string) => {
+  const activeDPadDirRef = useRef<string | null>(null);
+
+  // D-Pad handlers
+  const handleDPadStart = (dir: string) => {
     if (isPaused || lives <= 0) return;
-    playerRef.current.nextDir = dir;
+    activeDPadDirRef.current = dir;
+  };
+
+  const handleDPadEnd = () => {
+    activeDPadDirRef.current = null;
   };
 
   const cellSize = 32;
@@ -379,6 +385,9 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
   }, [isPaused, lives]);
 
   const getDesiredDirection = (): string | null => {
+    if (activeDPadDirRef.current) {
+      return activeDPadDirRef.current;
+    }
     if (externalDirectionRef.current) {
       return externalDirectionRef.current;
     }
@@ -986,37 +995,49 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         className="block max-w-full max-h-full h-auto"
         style={{ imageRendering: 'pixelated' }}
       />
-      {/* D-Pad overlay for mobile */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-48 h-48 opacity-60 md:hidden z-50 pointer-events-none">
+      {/* D-Pad overlay for mobile & desktop */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-48 h-48 opacity-60 z-50 pointer-events-none">
         {/* Up Button */}
         <button 
           className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-16 bg-[#1e3a8a]/80 backdrop-blur-md rounded-xl flex items-center justify-center active:bg-[#00f0ff]/80 active:scale-90 pointer-events-auto shadow-[0_0_15px_rgba(0,240,255,0.4)] border-2 border-[#00f0ff] transition-all"
-          onTouchStart={(e) => { e.preventDefault(); handleDPad('up'); }}
-          onMouseDown={(e) => { e.preventDefault(); handleDPad('up'); }}
+          onTouchStart={(e) => { e.preventDefault(); handleDPadStart('up'); }}
+          onTouchEnd={handleDPadEnd}
+          onMouseDown={(e) => { e.preventDefault(); handleDPadStart('up'); }}
+          onMouseUp={handleDPadEnd}
+          onMouseLeave={handleDPadEnd}
         >
           <div className="w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-b-[18px] border-b-white"></div>
         </button>
         {/* Down Button */}
         <button 
           className="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-16 bg-[#1e3a8a]/80 backdrop-blur-md rounded-xl flex items-center justify-center active:bg-[#00f0ff]/80 active:scale-90 pointer-events-auto shadow-[0_0_15px_rgba(0,240,255,0.4)] border-2 border-[#00f0ff] transition-all"
-          onTouchStart={(e) => { e.preventDefault(); handleDPad('down'); }}
-          onMouseDown={(e) => { e.preventDefault(); handleDPad('down'); }}
+          onTouchStart={(e) => { e.preventDefault(); handleDPadStart('down'); }}
+          onTouchEnd={handleDPadEnd}
+          onMouseDown={(e) => { e.preventDefault(); handleDPadStart('down'); }}
+          onMouseUp={handleDPadEnd}
+          onMouseLeave={handleDPadEnd}
         >
           <div className="w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[18px] border-t-white"></div>
         </button>
         {/* Left Button */}
         <button 
           className="absolute top-1/2 left-0 -translate-y-1/2 w-16 h-16 bg-[#1e3a8a]/80 backdrop-blur-md rounded-xl flex items-center justify-center active:bg-[#00f0ff]/80 active:scale-90 pointer-events-auto shadow-[0_0_15px_rgba(0,240,255,0.4)] border-2 border-[#00f0ff] transition-all"
-          onTouchStart={(e) => { e.preventDefault(); handleDPad('left'); }}
-          onMouseDown={(e) => { e.preventDefault(); handleDPad('left'); }}
+          onTouchStart={(e) => { e.preventDefault(); handleDPadStart('left'); }}
+          onTouchEnd={handleDPadEnd}
+          onMouseDown={(e) => { e.preventDefault(); handleDPadStart('left'); }}
+          onMouseUp={handleDPadEnd}
+          onMouseLeave={handleDPadEnd}
         >
           <div className="w-0 h-0 border-y-[12px] border-y-transparent border-r-[18px] border-r-white"></div>
         </button>
         {/* Right Button */}
         <button 
           className="absolute top-1/2 right-0 -translate-y-1/2 w-16 h-16 bg-[#1e3a8a]/80 backdrop-blur-md rounded-xl flex items-center justify-center active:bg-[#00f0ff]/80 active:scale-90 pointer-events-auto shadow-[0_0_15px_rgba(0,240,255,0.4)] border-2 border-[#00f0ff] transition-all"
-          onTouchStart={(e) => { e.preventDefault(); handleDPad('right'); }}
-          onMouseDown={(e) => { e.preventDefault(); handleDPad('right'); }}
+          onTouchStart={(e) => { e.preventDefault(); handleDPadStart('right'); }}
+          onTouchEnd={handleDPadEnd}
+          onMouseDown={(e) => { e.preventDefault(); handleDPadStart('right'); }}
+          onMouseUp={handleDPadEnd}
+          onMouseLeave={handleDPadEnd}
         >
           <div className="w-0 h-0 border-y-[12px] border-y-transparent border-l-[18px] border-l-white"></div>
         </button>
