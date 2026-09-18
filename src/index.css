@@ -1,9 +1,10 @@
 @import "tailwindcss";
 :root {
+  --spacing: 0.25rem;
   --font-cairo: 'FontGame', 'Cairo', 'Tajawal', system-ui, sans-serif;
   --font-tajawal: 'FontGame', 'Tajawal', 'Cairo', system-ui, sans-serif;
 
-  /* Color Palette */
+  /* Theme Colors */
   --bg-dark: #0a0d1a;
   --bg-card: rgba(15, 23, 42, 0.75);
   --bg-card-hover: rgba(30, 41, 59, 0.85);

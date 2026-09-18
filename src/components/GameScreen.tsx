@@ -96,8 +96,8 @@ export const GameScreen: React.FC<GameScreenProps> = ({
         <Heart
           key={i}
           className={`w-6 h-6 transition-all duration-300 ${i < lives
-              ? 'text-[#ff007f] fill-[#ff007f] filter drop-shadow-[0_0_5px_rgba(255,0,127,0.7)]'
-              : 'text-gray-600 fill-transparent'
+            ? 'text-[#ff007f] fill-[#ff007f] filter drop-shadow-[0_0_5px_rgba(255,0,127,0.7)]'
+            : 'text-gray-600 fill-transparent'
             }`}
         />
       );
@@ -109,12 +109,12 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     <div className="w-full max-w-[1400px] mx-auto p-4 sm:p-6 lg:p-8 flex flex-col items-center justify-start gap-4 lg:gap-8 h-auto overflow-y-auto lg:h-screen lg:overflow-hidden">
 
       {/* 1. Header panel */}
-      <div className="glass-panel w-full flex items-center justify-between px-8 py-6 relative z-10 flex-shrink-0">
+      <div className="glass-panel w-full flex items-center justify-between px-[32px] py-[24px] relative z-10 ">
         <button
           onClick={onBackToWelcome}
           className="flex items-center gap-2 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all"
         >
-          <ArrowLeft className="w-4 h-4 ml-1" />
+          <ArrowLeft className="w-4 h-4 ml-1 p-2" />
           الرئيسية
         </button>
 
@@ -165,7 +165,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                 <div className="flex flex-col items-center justify-center h-full w-full relative">
                   {/* Decorative faint icon */}
                   <Target className="absolute w-64 h-64 text-[#00f0ff] opacity-5 filter blur-sm top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-                  
+
                   <div className="text-3xl lg:text-5xl text-white font-black text-center leading-relaxed p-8 bg-slate-800/50 rounded-3xl border border-white/20 shadow-xl relative z-10 w-full animate-float">
                     <span className="text-white drop-shadow-lg">
                       {currentQuestion.questionText}
@@ -211,8 +211,8 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           {notification && (
             <div
               className={`absolute top-4 px-6 py-3 rounded-full font-black text-white shadow-lg transition-all duration-300 z-20 ${notification.type === 'success'
-                  ? 'bg-emerald-600/90 border border-emerald-400 neon-border-cyan'
-                  : 'bg-rose-600/90 border border-rose-400 animate-shake neon-border-pink'
+                ? 'bg-emerald-600/90 border border-emerald-400 neon-border-cyan'
+                : 'bg-rose-600/90 border border-rose-400 animate-shake neon-border-pink'
                 }`}
             >
               {notification.text}
