@@ -995,55 +995,55 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         className="block max-w-full max-h-full h-auto"
         style={{ imageRendering: 'pixelated' }}
       />
-      {/* D-Pad overlay - Positioned in the bottom right corner */}
-      <div className="absolute bottom-6 right-6 w-40 h-40 flex flex-col items-center justify-between z-50 pointer-events-none">
+      {/* D-Pad overlay - Positioned in the bottom left corner for better mobile ergonomics */}
+      <div className="absolute bottom-8 left-8 sm:bottom-12 sm:left-12 w-48 h-48 flex flex-col items-center justify-between z-50 pointer-events-none opacity-85">
         {/* Up Button */}
         <button 
-          className="w-14 h-14 bg-white/40 backdrop-blur-md rounded-2xl flex items-center justify-center active:bg-white/60 active:scale-90 pointer-events-auto shadow-[0_4px_15px_rgba(0,0,0,0.3)] border border-white/50 transition-all"
+          className="w-16 h-16 bg-white/30 backdrop-blur-md rounded-2xl flex items-center justify-center active:bg-white/50 active:scale-90 pointer-events-auto shadow-[0_4px_15px_rgba(0,0,0,0.4)] border-2 border-white/40 transition-all"
           onTouchStart={(e) => { e.preventDefault(); handleDPadStart('up'); }}
           onTouchEnd={handleDPadEnd}
           onMouseDown={(e) => { e.preventDefault(); handleDPadStart('up'); }}
           onMouseUp={handleDPadEnd}
           onMouseLeave={handleDPadEnd}
         >
-          <svg className="w-8 h-8 text-white drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4l-8 10h16z"/></svg>
+          <svg className="w-10 h-10 text-white drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4l-8 10h16z"/></svg>
         </button>
 
         {/* Middle Row (Left & Right) */}
         <div className="w-full flex flex-row justify-between">
           <button 
-            className="w-14 h-14 bg-white/40 backdrop-blur-md rounded-2xl flex items-center justify-center active:bg-white/60 active:scale-90 pointer-events-auto shadow-[0_4px_15px_rgba(0,0,0,0.3)] border border-white/50 transition-all"
+            className="w-16 h-16 bg-white/30 backdrop-blur-md rounded-2xl flex items-center justify-center active:bg-white/50 active:scale-90 pointer-events-auto shadow-[0_4px_15px_rgba(0,0,0,0.4)] border-2 border-white/40 transition-all"
             onTouchStart={(e) => { e.preventDefault(); handleDPadStart('left'); }}
             onTouchEnd={handleDPadEnd}
             onMouseDown={(e) => { e.preventDefault(); handleDPadStart('left'); }}
             onMouseUp={handleDPadEnd}
             onMouseLeave={handleDPadEnd}
           >
-            <svg className="w-8 h-8 text-white drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M4 12l10-8v16z"/></svg>
+            <svg className="w-10 h-10 text-white drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M4 12l10-8v16z"/></svg>
           </button>
 
           <button 
-            className="w-14 h-14 bg-white/40 backdrop-blur-md rounded-2xl flex items-center justify-center active:bg-white/60 active:scale-90 pointer-events-auto shadow-[0_4px_15px_rgba(0,0,0,0.3)] border border-white/50 transition-all"
+            className="w-16 h-16 bg-white/30 backdrop-blur-md rounded-2xl flex items-center justify-center active:bg-white/50 active:scale-90 pointer-events-auto shadow-[0_4px_15px_rgba(0,0,0,0.4)] border-2 border-white/40 transition-all"
             onTouchStart={(e) => { e.preventDefault(); handleDPadStart('right'); }}
             onTouchEnd={handleDPadEnd}
             onMouseDown={(e) => { e.preventDefault(); handleDPadStart('right'); }}
             onMouseUp={handleDPadEnd}
             onMouseLeave={handleDPadEnd}
           >
-            <svg className="w-8 h-8 text-white drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M20 12l-10 8V4z"/></svg>
+            <svg className="w-10 h-10 text-white drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M20 12l-10 8V4z"/></svg>
           </button>
         </div>
 
         {/* Down Button */}
         <button 
-          className="w-14 h-14 bg-white/40 backdrop-blur-md rounded-2xl flex items-center justify-center active:bg-white/60 active:scale-90 pointer-events-auto shadow-[0_4px_15px_rgba(0,0,0,0.3)] border border-white/50 transition-all"
+          className="w-16 h-16 bg-white/30 backdrop-blur-md rounded-2xl flex items-center justify-center active:bg-white/50 active:scale-90 pointer-events-auto shadow-[0_4px_15px_rgba(0,0,0,0.4)] border-2 border-white/40 transition-all"
           onTouchStart={(e) => { e.preventDefault(); handleDPadStart('down'); }}
           onTouchEnd={handleDPadEnd}
           onMouseDown={(e) => { e.preventDefault(); handleDPadStart('down'); }}
           onMouseUp={handleDPadEnd}
           onMouseLeave={handleDPadEnd}
         >
-          <svg className="w-8 h-8 text-white drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M12 20l8-10H4z"/></svg>
+          <svg className="w-10 h-10 text-white drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M12 20l8-10H4z"/></svg>
         </button>
       </div>
     </div>
