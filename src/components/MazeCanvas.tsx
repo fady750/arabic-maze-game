@@ -996,7 +996,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         style={{ imageRendering: 'pixelated' }}
       />
       {/* D-Pad overlay - Positioned in the bottom left corner for better mobile ergonomics */}
-      <div className="absolute bottom-8 left-8 sm:bottom-12 sm:left-12 w-48 h-48 flex flex-col items-center justify-between z-50 pointer-events-none opacity-85 lg:hidden">
+      <div className="absolute bottom-8 left-8 sm:bottom-12 sm:left-12 w-48 h-48 flex flex-col items-center justify-between z-50 pointer-events-none opacity-85 md:hidden">
         {/* Up Button */}
         <button 
           className="w-16 h-16 bg-white/30 backdrop-blur-md rounded-2xl flex items-center justify-center active:bg-white/50 active:scale-90 pointer-events-auto shadow-[0_4px_15px_rgba(0,0,0,0.4)] border-2 border-white/40 transition-all"
