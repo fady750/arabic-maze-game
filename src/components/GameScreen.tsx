@@ -109,7 +109,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
     <div className="w-full max-w-[1400px] mx-auto p-4 sm:p-6 lg:p-8 flex flex-col items-center justify-start gap-4 lg:gap-8 h-auto overflow-y-auto lg:h-screen lg:overflow-hidden">
 
       {/* 1. Header panel */}
-      <div className="glass-panel w-full flex items-center justify-between px-6 py-4 relative z-10 flex-shrink-0">
+      <div className="glass-panel w-full flex items-center justify-between px-8 py-6 relative z-10 flex-shrink-0">
         <button
           onClick={onBackToWelcome}
           className="flex items-center gap-2 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all"
@@ -166,8 +166,8 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                   {/* Decorative faint icon */}
                   <Target className="absolute w-64 h-64 text-[#00f0ff] opacity-5 filter blur-sm top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                   
-                  <div className="text-3xl lg:text-5xl text-white font-black text-center leading-relaxed p-6 bg-slate-900/40 rounded-2xl border border-white/10 shadow-2xl relative z-10 w-full animate-float">
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00f0ff] to-[#39ff14] filter drop-shadow-[0_0_10px_rgba(0,240,255,0.5)]">
+                  <div className="text-3xl lg:text-5xl text-white font-black text-center leading-relaxed p-8 bg-slate-800/50 rounded-3xl border border-white/20 shadow-xl relative z-10 w-full animate-float">
+                    <span className="text-white drop-shadow-lg">
                       {currentQuestion.questionText}
                     </span>
                   </div>
