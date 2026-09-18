@@ -1,5 +1,5 @@
 import React from 'react';
-import { Gamepad2, Play } from 'lucide-react';
+import { Gamepad2, Play, HelpCircle, Keyboard, Trophy, Skull } from 'lucide-react';
 import { gameAudio } from '../utils/audio';
 
 interface WelcomeScreenProps {
@@ -28,54 +28,47 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
         </div>
 
         {/* Description / Instructions */}
-        {/* <div className="space-y-4 text-right w-full mb-8 text-gray-300">
-          <h3 className="text-xl font-bold text-white mb-3 flex items-center justify-start gap-2 border-b border-gray-700 pb-2">
-            <HelpCircle className="w-5 h-5 text-[#ff007f]" />
+        <div className="space-y-4 text-right w-full mb-8 text-gray-300 bg-slate-900/40 p-6 rounded-2xl border border-white/5">
+          <h3 className="text-2xl font-bold text-white mb-4 flex items-center justify-start gap-2 border-b border-gray-700/50 pb-3">
+            <HelpCircle className="w-6 h-6 text-[#ff007f]" />
             طريقة اللعب:
           </h3>
 
           <div className="flex items-start gap-3 justify-start">
-            <span className="text-[#39ff14] text-xl">◀</span>
-            <p className="leading-relaxed">
-              ستظهر لك <strong>صورة</strong> في أعلى الشاشة تمثل شيئاً أو فعلاً معيناً.
+            <Trophy className="w-6 h-6 text-[#39ff14] flex-shrink-0 mt-1" />
+            <p className="leading-relaxed text-lg">
+              ستظهر لك <strong>كلمة</strong> على جانب الشاشة. المتاهة تحتوي على <strong>أربع غرف</strong>، وكل غرفة بها نص.
             </p>
           </div>
 
           <div className="flex items-start gap-3 justify-start">
-            <span className="text-[#39ff14] text-xl">◀</span>
-            <p className="leading-relaxed">
-              المتاهة تحتوي على <strong>أربع غرف في الزوايا</strong>، بكل غرفة كلمة باللغة العربية.
+            <Gamepad2 className="w-6 h-6 text-[#00f0ff] flex-shrink-0 mt-1" />
+            <p className="leading-relaxed text-lg">
+              عليك توجيه اللاعب للوصول إلى <strong>الغرفة التي تحتوي على الترجمة أو الكلمة الصحيحة</strong> للفوز بالمستوى.
             </p>
           </div>
 
           <div className="flex items-start gap-3 justify-start">
-            <span className="text-[#39ff14] text-xl">◀</span>
-            <p className="leading-relaxed">
-              عليك توجيه اللاعب للوصول إلى <strong>الغرفة التي تحتوي على الكلمة الصحيحة</strong> للفوز بالمستوى والانتقال للمستوى التالي.
+            <Skull className="w-6 h-6 text-[#fff01f] flex-shrink-0 mt-1" />
+            <p className="leading-relaxed text-lg">
+              <strong>احذر!</strong> هناك وحوش تتحرك داخل المتاهة، تجنبها حتى لا تفقد قلوبك (لديك 3 محاولات).
             </p>
           </div>
 
-          <div className="flex items-start gap-3 justify-start">
-            <span className="text-[#39ff14] text-xl">◀</span>
-            <p className="leading-relaxed">
-              <strong>احذر!</strong> هناك وحوش تتحرك داخل المتاهة، يجب تجنبها حتى لا تقتلك وتفقد قلوبك (لديك 3 قلوب).
+          <div className="flex items-center gap-3 justify-start border-t border-gray-700/50 pt-5 mt-2">
+            <Keyboard className="w-6 h-6 text-[#ff5f00] flex-shrink-0" />
+            <p className="leading-relaxed text-gray-400 text-lg">
+              <strong>التحكم:</strong> الأسهم أو <span className="text-[#00f0ff] font-bold mx-1">W A S D</span> أو أزرار الشاشة للحركة.
             </p>
           </div>
-
-          <div className="flex items-start gap-3 justify-start border-t border-gray-800 pt-4">
-            <span className="text-[#fff01f] text-xl">⌨</span>
-            <p className="leading-relaxed text-gray-400">
-              <strong>التحكم:</strong> استخدم الأسهم <span className="text-[#00f0ff]">↑ ↓ ← →</span> أو أزرار <span className="text-[#00f0ff]">W A S D</span> للحركة. أو استخدم أزرار التحكم على الشاشة.
-            </p>
-          </div>
-        </div> */}
+        </div>
 
         {/* Start Button */}
         <button
           onClick={handleStart}
-          className="game-btn px-10 py-4 text-xl flex items-center gap-3 w-full max-w-xs pulse-glow-cyan"
+          className="game-btn px-10 py-5 text-2xl font-black flex items-center gap-4 w-full max-w-sm pulse-glow-cyan rounded-2xl"
         >
-          <Play className="w-6 h-6 fill-current" />
+          <Play className="w-8 h-8 fill-current" />
           إِِبْدَأْ اللَعِبَ الأَن
         </button>
       </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Heart, ArrowLeft, Volume2, Music } from 'lucide-react';
+import { Heart, ArrowLeft, Volume2, Music, Target } from 'lucide-react';
 import { MazeCanvas } from './MazeCanvas';
 import type { Question } from '../data/questions';
 
@@ -150,20 +150,27 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             <div className="relative z-10 w-full h-full flex flex-col items-center justify-center p-2">
               {currentQuestion.image ? (
                 <>
-                  <div className="flex-1 w-full min-h-0 flex items-center justify-center mb-4">
+                  <div className="flex-1 w-full min-h-0 flex items-center justify-center mb-4 relative z-10">
                     <img
                       src={currentQuestion.image}
                       alt="سؤال المتاهة"
                       className="max-w-full max-h-full object-contain drop-shadow-lg"
                     />
                   </div>
-                  <div className="text-xl lg:text-3xl text-white font-black text-center leading-relaxed shrink-0">
+                  <div className="text-xl lg:text-3xl text-white font-black text-center leading-relaxed shrink-0 bg-slate-900/60 p-4 rounded-xl border border-white/10 w-full relative z-10 shadow-lg">
                     {currentQuestion.questionText}
                   </div>
                 </>
               ) : (
-                <div className="text-2xl lg:text-4xl text-white font-black text-center leading-relaxed p-4">
-                  {currentQuestion.questionText}
+                <div className="flex flex-col items-center justify-center h-full w-full relative">
+                  {/* Decorative faint icon */}
+                  <Target className="absolute w-64 h-64 text-[#00f0ff] opacity-5 filter blur-sm top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                  
+                  <div className="text-3xl lg:text-5xl text-white font-black text-center leading-relaxed p-6 bg-slate-900/40 rounded-2xl border border-white/10 shadow-2xl relative z-10 w-full animate-float">
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00f0ff] to-[#39ff14] filter drop-shadow-[0_0_10px_rgba(0,240,255,0.5)]">
+                      {currentQuestion.questionText}
+                    </span>
+                  </div>
                 </div>
               )}
 
