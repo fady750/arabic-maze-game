@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { gameAudio } from '../utils/audio';
 import robotImg from '../assets/robot.png';
 import robotSideImg from '../assets/robot-side.png';
@@ -53,7 +53,7 @@ interface Monster {
   targetY: number;
   speed: number;
   color: string;
-  personality: 'chaser' | 'random';
+  personality: 'chaser' | 'ambusher' | 'wanderer';
 }
 
 interface MazeCanvasProps {
@@ -138,130 +138,126 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
   const cameraRef = useRef({ x: 9 * 32 + 16, y: 9 * 32 + 16, zoom: 1.8 });
   const celebrationRef = useRef<{ active: boolean, progress: number } | null>(null);
 
+  // Background Cache Canvas
+  const bgCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // Joystick state
-  const [joystick, setJoystick] = useState<{
-    startX: number;
-    startY: number;
-    curX: number;
-    curY: number;
-  } | null>(null);
-
-  const joystickStartRef = useRef<{ x: number; y: number } | null>(null);
-  const touchDirectionRef = useRef<string | null>(null);
-
-  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (isPaused || lives <= 0) return;
-    const touch = e.touches[0];
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (!rect) return;
-
-    const x = touch.clientX - rect.left;
-    const y = touch.clientY - rect.top;
-
-    joystickStartRef.current = { x, y };
-    setJoystick({
-      startX: x,
-      startY: y,
-      curX: x,
-      curY: y
-    });
-    touchDirectionRef.current = null;
-  };
-
-  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (!joystickStartRef.current || isPaused || lives <= 0) return;
-    const touch = e.touches[0];
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (!rect) return;
-
-    const x = touch.clientX - rect.left;
-    const y = touch.clientY - rect.top;
-
-    const start = joystickStartRef.current;
-
-    setJoystick({
-      startX: start.x,
-      startY: start.y,
-      curX: x,
-      curY: y
-    });
-
-    const dx = x - start.x;
-    const dy = y - start.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-
-    if (distance > 15) {
-      if (Math.abs(dx) > Math.abs(dy)) {
-        touchDirectionRef.current = dx > 0 ? 'right' : 'left';
-      } else {
-        touchDirectionRef.current = dy > 0 ? 'down' : 'up';
-      }
-    } else {
-      touchDirectionRef.current = null;
+  // Re-render the static background whenever cagedRooms changes
+  useEffect(() => {
+    if (!bgCanvasRef.current) {
+      bgCanvasRef.current = document.createElement('canvas');
     }
-  };
+    const bgCanvas = bgCanvasRef.current;
+    const bCtx = bgCanvas.getContext('2d');
+    if (!bCtx) return;
 
-  const handleTouchEnd = () => {
-    joystickStartRef.current = null;
-    setJoystick(null);
-    touchDirectionRef.current = null;
-  };
+    bgCanvas.width = 19 * cellSize;
+    bgCanvas.height = 19 * cellSize;
 
-  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (isPaused || lives <= 0) return;
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (!rect) return;
+    bCtx.fillStyle = '#020617';
+    bCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
 
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    joystickStartRef.current = { x, y };
-    setJoystick({
-      startX: x,
-      startY: y,
-      curX: x,
-      curY: y
-    });
-    touchDirectionRef.current = null;
-  };
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!joystickStartRef.current || isPaused || lives <= 0) return;
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (!rect) return;
-
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    const start = joystickStartRef.current;
-
-    setJoystick({
-      startX: start.x,
-      startY: start.y,
-      curX: x,
-      curY: y
-    });
-
-    const dx = x - start.x;
-    const dy = y - start.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-
-    if (distance > 15) {
-      if (Math.abs(dx) > Math.abs(dy)) {
-        touchDirectionRef.current = dx > 0 ? 'right' : 'left';
-      } else {
-        touchDirectionRef.current = dy > 0 ? 'down' : 'up';
-      }
-    } else {
-      touchDirectionRef.current = null;
+    // 0.5 Draw Sci-Fi Floor Grid
+    bCtx.strokeStyle = 'rgba(255, 150, 0, 0.15)';
+    bCtx.lineWidth = 1;
+    for (let i = 0; i <= 19; i++) {
+      bCtx.beginPath();
+      bCtx.moveTo(i * cellSize, 0);
+      bCtx.lineTo(i * cellSize, 19 * cellSize);
+      bCtx.stroke();
+      
+      bCtx.beginPath();
+      bCtx.moveTo(0, i * cellSize);
+      bCtx.lineTo(19 * cellSize, i * cellSize);
+      bCtx.stroke();
     }
-  };
 
-  const handleMouseUpOrLeave = () => {
-    joystickStartRef.current = null;
-    setJoystick(null);
-    touchDirectionRef.current = null;
+    bCtx.fillStyle = 'rgba(255, 150, 0, 0.8)';
+    bCtx.shadowColor = '#ff9600';
+    bCtx.shadowBlur = 4;
+    for (let r = 0; r <= 19; r++) {
+      for (let c = 0; c <= 19; c++) {
+         bCtx.beginPath();
+         bCtx.arc(c * cellSize, r * cellSize, 1.5, 0, Math.PI * 2);
+         bCtx.fill();
+      }
+    }
+    bCtx.shadowBlur = 0;
+
+    // 1. Draw Room Glow zones
+    ROOMS.forEach((room) => {
+      bCtx.fillStyle = room.glow;
+      bCtx.fillRect((room.x - 1) * cellSize, (room.y - 1) * cellSize, cellSize * 3, cellSize * 3);
+
+      // Neon Room Borders
+      bCtx.strokeStyle = room.color;
+      bCtx.lineWidth = 2;
+      bCtx.shadowColor = room.color;
+      bCtx.shadowBlur = 10;
+      bCtx.strokeRect((room.x - 1) * cellSize, (room.y - 1) * cellSize, cellSize * 3, cellSize * 3);
+    });
+    bCtx.shadowBlur = 0; // Reset shadows
+
+    // 2. Draw Maze Walls
+    for (let r = 0; r < 19; r++) {
+      for (let c = 0; c < 19; c++) {
+        let isWall = MAZE_GRID[r][c] === 1;
+
+        // Dynamically turn caged rooms into walls
+        for (const room of cagedRooms) {
+          if (Math.abs(c - room.x) <= 1 && Math.abs(r - room.y) <= 1) isWall = true;
+        }
+
+        if (isWall) {
+          const x = c * cellSize;
+          const y = r * cellSize;
+          
+          // Base wall (dark blue metallic)
+          bCtx.fillStyle = '#0a192f'; 
+          bCtx.fillRect(x, y, cellSize, cellSize);
+          
+          // Inner raised panel
+          bCtx.fillStyle = '#112240'; 
+          bCtx.fillRect(x + 3, y + 3, cellSize - 6, cellSize - 6);
+
+          // Sci-fi borders
+          bCtx.strokeStyle = '#1e3a8a';
+          bCtx.lineWidth = 1;
+          bCtx.strokeRect(x, y, cellSize, cellSize);
+
+          // Neon blue corner highlights
+          bCtx.strokeStyle = '#00f0ff';
+          bCtx.shadowColor = '#00f0ff';
+          bCtx.shadowBlur = 5;
+          
+          bCtx.beginPath();
+          bCtx.moveTo(x + 6, y + 1);
+          bCtx.lineTo(x + 1, y + 1);
+          bCtx.lineTo(x + 1, y + 6);
+          bCtx.stroke();
+
+          bCtx.beginPath();
+          bCtx.moveTo(x + cellSize - 6, y + cellSize - 1);
+          bCtx.lineTo(x + cellSize - 1, y + cellSize - 1);
+          bCtx.lineTo(x + cellSize - 1, y + cellSize - 6);
+          bCtx.stroke();
+
+          // Occasional bright neon accents on panels
+          if ((r * 13 + c * 7) % 11 === 0) {
+            bCtx.shadowBlur = 8;
+            bCtx.fillStyle = '#00f0ff';
+            bCtx.fillRect(x + cellSize/2 - 3, y + 3, 6, 2);
+          }
+
+          bCtx.shadowBlur = 0; // Reset
+        }
+      }
+    }
+  }, [cagedRooms]);
+
+  // D-Pad handler
+  const handleDPad = (dir: string) => {
+    if (isPaused || lives <= 0) return;
+    playerRef.current.nextDir = dir;
   };
 
   const cellSize = 32;
@@ -383,9 +379,6 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
   }, [isPaused, lives]);
 
   const getDesiredDirection = (): string | null => {
-    if (touchDirectionRef.current) {
-      return touchDirectionRef.current;
-    }
     if (externalDirectionRef.current) {
       return externalDirectionRef.current;
     }
@@ -729,107 +722,12 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       ctx.scale(zoom, zoom);
       ctx.translate(-cameraRef.current.x, -cameraRef.current.y);
 
-      // 0.5 Draw Sci-Fi Floor Grid
-      ctx.strokeStyle = 'rgba(255, 150, 0, 0.15)';
-      ctx.lineWidth = 1;
-      for (let i = 0; i <= 19; i++) {
-        ctx.beginPath();
-        ctx.moveTo(i * cellSize, 0);
-        ctx.lineTo(i * cellSize, 19 * cellSize);
-        ctx.stroke();
-        
-        ctx.beginPath();
-        ctx.moveTo(0, i * cellSize);
-        ctx.lineTo(19 * cellSize, i * cellSize);
-        ctx.stroke();
-      }
-
-      ctx.fillStyle = 'rgba(255, 150, 0, 0.8)';
-      ctx.shadowColor = '#ff9600';
-      ctx.shadowBlur = 4;
-      for (let r = 0; r <= 19; r++) {
-        for (let c = 0; c <= 19; c++) {
-           ctx.beginPath();
-           ctx.arc(c * cellSize, r * cellSize, 1.5, 0, Math.PI * 2);
-           ctx.fill();
-        }
-      }
-      ctx.shadowBlur = 0;
-
       const player = playerRef.current;
       const monsters = monstersRef.current;
 
-      // 1. Draw Room Glow zones
-      ROOMS.forEach((room) => {
-        ctx.fillStyle = room.glow;
-        ctx.fillRect((room.x - 1) * cellSize, (room.y - 1) * cellSize, cellSize * 3, cellSize * 3);
-
-        // Neon Room Borders
-        ctx.strokeStyle = room.color;
-        ctx.lineWidth = 2;
-        ctx.shadowColor = room.color;
-        ctx.shadowBlur = 10;
-        ctx.strokeRect((room.x - 1) * cellSize, (room.y - 1) * cellSize, cellSize * 3, cellSize * 3);
-      });
-      ctx.shadowBlur = 0; // Reset shadows
-
-      // 2. Draw Maze Walls
-      for (let r = 0; r < 19; r++) {
-        for (let c = 0; c < 19; c++) {
-          let isWall = MAZE_GRID[r][c] === 1;
-
-          // Dynamically turn caged rooms into walls
-          for (const room of cagedRooms) {
-            if (Math.abs(c - room.x) <= 1 && Math.abs(r - room.y) <= 1) isWall = true;
-
-          }
-
-          if (isWall) {
-            const x = c * cellSize;
-            const y = r * cellSize;
-            
-            // Base wall (dark blue metallic)
-            ctx.fillStyle = '#0a192f'; 
-            ctx.fillRect(x, y, cellSize, cellSize);
-            
-            // Inner raised panel
-            ctx.fillStyle = '#112240'; 
-            ctx.fillRect(x + 3, y + 3, cellSize - 6, cellSize - 6);
-
-            // Sci-fi borders
-            ctx.strokeStyle = '#1e3a8a';
-            ctx.lineWidth = 1;
-            ctx.strokeRect(x, y, cellSize, cellSize);
-
-            // Neon blue corner highlights
-            ctx.strokeStyle = '#00f0ff';
-            ctx.shadowColor = '#00f0ff';
-            ctx.shadowBlur = 5;
-            
-            // Top left corner highlight
-            ctx.beginPath();
-            ctx.moveTo(x + 6, y + 1);
-            ctx.lineTo(x + 1, y + 1);
-            ctx.lineTo(x + 1, y + 6);
-            ctx.stroke();
-
-            // Bottom right corner highlight
-            ctx.beginPath();
-            ctx.moveTo(x + cellSize - 6, y + cellSize - 1);
-            ctx.lineTo(x + cellSize - 1, y + cellSize - 1);
-            ctx.lineTo(x + cellSize - 1, y + cellSize - 6);
-            ctx.stroke();
-
-            // Occasional bright neon accents on panels
-            if ((r * 13 + c * 7) % 11 === 0) {
-              ctx.shadowBlur = 8;
-              ctx.fillStyle = '#00f0ff';
-              ctx.fillRect(x + cellSize/2 - 3, y + 3, 6, 2);
-            }
-
-            ctx.shadowBlur = 0; // Reset
-          }
-        }
+      // Draw cached static background
+      if (bgCanvasRef.current) {
+        ctx.drawImage(bgCanvasRef.current, 0, 0);
       }
 
       // 2.5 Draw Warp Portals
@@ -1072,13 +970,6 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
   return (
     <div
       ref={containerRef}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUpOrLeave}
-      onMouseLeave={handleMouseUpOrLeave}
       className="relative flex justify-center items-center rounded-2xl overflow-hidden shadow-[0_0_40px_rgba(0,240,255,0.15)] bg-[#030712] border-2 border-[#1e3a8a]/50 touch-none select-none"
       style={{
         aspectRatio: '1/1',
@@ -1095,45 +986,41 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         className="block max-w-full max-h-full h-auto"
         style={{ imageRendering: 'pixelated' }}
       />
-      {joystick && (
-        <div
-          className="absolute pointer-events-none rounded-full flex items-center justify-center animate-fade-in"
-          style={{
-            left: joystick.startX - 50,
-            top: joystick.startY - 50,
-            width: 100,
-            height: 100,
-            backgroundColor: 'rgba(255, 255, 255, 0.08)',
-            border: '2px solid rgba(0, 240, 255, 0.3)',
-            boxShadow: '0 0 15px rgba(0, 240, 255, 0.15)',
-            zIndex: 50,
-          }}
+      {/* D-Pad overlay for mobile */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-48 h-48 opacity-60 md:hidden z-50 pointer-events-none">
+        {/* Up Button */}
+        <button 
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-16 bg-[#1e3a8a]/80 backdrop-blur-md rounded-xl flex items-center justify-center active:bg-[#00f0ff]/80 active:scale-90 pointer-events-auto shadow-[0_0_15px_rgba(0,240,255,0.4)] border-2 border-[#00f0ff] transition-all"
+          onTouchStart={(e) => { e.preventDefault(); handleDPad('up'); }}
+          onMouseDown={(e) => { e.preventDefault(); handleDPad('up'); }}
         >
-          <div
-            className="absolute rounded-full transition-transform duration-75"
-            style={{
-              width: 40,
-              height: 40,
-              backgroundColor: 'rgba(0, 240, 255, 0.8)',
-              border: '2px solid #ffffff',
-              boxShadow: '0 0 10px rgba(0, 240, 255, 0.5)',
-              transform: (() => {
-                const dx = joystick.curX - joystick.startX;
-                const dy = joystick.curY - joystick.startY;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                const maxDist = 30;
-                if (dist === 0) return 'translate(0px, 0px)';
-
-                const angle = Math.atan2(dy, dx);
-                const limitDist = Math.min(dist, maxDist);
-                const translateX = Math.cos(angle) * limitDist;
-                const translateY = Math.sin(angle) * limitDist;
-                return `translate(${translateX}px, ${translateY}px)`;
-              })(),
-            }}
-          />
-        </div>
-      )}
+          <div className="w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-b-[18px] border-b-white"></div>
+        </button>
+        {/* Down Button */}
+        <button 
+          className="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-16 bg-[#1e3a8a]/80 backdrop-blur-md rounded-xl flex items-center justify-center active:bg-[#00f0ff]/80 active:scale-90 pointer-events-auto shadow-[0_0_15px_rgba(0,240,255,0.4)] border-2 border-[#00f0ff] transition-all"
+          onTouchStart={(e) => { e.preventDefault(); handleDPad('down'); }}
+          onMouseDown={(e) => { e.preventDefault(); handleDPad('down'); }}
+        >
+          <div className="w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[18px] border-t-white"></div>
+        </button>
+        {/* Left Button */}
+        <button 
+          className="absolute top-1/2 left-0 -translate-y-1/2 w-16 h-16 bg-[#1e3a8a]/80 backdrop-blur-md rounded-xl flex items-center justify-center active:bg-[#00f0ff]/80 active:scale-90 pointer-events-auto shadow-[0_0_15px_rgba(0,240,255,0.4)] border-2 border-[#00f0ff] transition-all"
+          onTouchStart={(e) => { e.preventDefault(); handleDPad('left'); }}
+          onMouseDown={(e) => { e.preventDefault(); handleDPad('left'); }}
+        >
+          <div className="w-0 h-0 border-y-[12px] border-y-transparent border-r-[18px] border-r-white"></div>
+        </button>
+        {/* Right Button */}
+        <button 
+          className="absolute top-1/2 right-0 -translate-y-1/2 w-16 h-16 bg-[#1e3a8a]/80 backdrop-blur-md rounded-xl flex items-center justify-center active:bg-[#00f0ff]/80 active:scale-90 pointer-events-auto shadow-[0_0_15px_rgba(0,240,255,0.4)] border-2 border-[#00f0ff] transition-all"
+          onTouchStart={(e) => { e.preventDefault(); handleDPad('right'); }}
+          onMouseDown={(e) => { e.preventDefault(); handleDPad('right'); }}
+        >
+          <div className="w-0 h-0 border-y-[12px] border-y-transparent border-l-[18px] border-l-white"></div>
+        </button>
+      </div>
     </div>
   );
 };
