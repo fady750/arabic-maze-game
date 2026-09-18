@@ -57,6 +57,7 @@ interface Monster {
 }
 
 interface MazeCanvasProps {
+  level: number;
   words: string[]; // 4 words distributed to the 4 rooms
   correctWord: string;
   onCorrect: () => void;
@@ -68,6 +69,7 @@ interface MazeCanvasProps {
 }
 
 export const MazeCanvas: React.FC<MazeCanvasProps> = ({
+  level,
   words,
   correctWord,
   onCorrect,
@@ -75,7 +77,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
   onLoseLife,
   lives,
   isPaused,
-  externalDirection,
+  externalDirection
 }) => {
   const numWords = words.length;
 
@@ -126,6 +128,10 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
   // Monsters state
   const monstersRef = useRef<Monster[]>([]);
+  
+  // Ghost AI mode: alternates between scatter and chase
+  const ghostModeRef = useRef<'scatter' | 'chase'>('scatter');
+  const ghostTimerRef = useRef<number>(0);
 
   // Local state for wrong room cooldowns to prevent double triggers
   const lastRoomVisitedRef = useRef<{ id: number; time: number } | null>(null);
@@ -283,8 +289,14 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       zoom: 1.8
     };
 
-    // Reset monsters based on current level / words length
-    // We'll spawn 3 monsters: 1 chaser (Red), 2 random patrollers (Cyan, Orange)
+    // Reset monsters based on current level
+    let baseSpeed = 1.5; // 75% for level 1
+    if (level >= 2 && level <= 4) baseSpeed = 1.7; // 85%
+    else if (level >= 5) baseSpeed = 1.9; // 95%
+    
+    ghostModeRef.current = 'scatter';
+    ghostTimerRef.current = Date.now();
+
     monstersRef.current = [
       {
         x: 5 * cellSize + cellSize / 2,
@@ -293,7 +305,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         gridY: 5,
         targetX: 5,
         targetY: 5,
-        speed: 1,
+        speed: baseSpeed,
         color: '#ff0000', // Red: Chaser
         personality: 'chaser'
       },
@@ -304,9 +316,9 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         gridY: 5,
         targetX: 13,
         targetY: 5,
-        speed: 1,
-        color: '#00f0ff', // Cyan: Random
-        personality: 'random'
+        speed: baseSpeed,
+        color: '#00f0ff', // Cyan: Ambusher
+        personality: 'ambusher'
       },
       {
         x: 5 * cellSize + cellSize / 2,
@@ -315,9 +327,9 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         gridY: 13,
         targetX: 5,
         targetY: 13,
-        speed: 1.1,
-        color: '#ffaa00', // Orange: Random
-        personality: 'random'
+        speed: Math.max(1, baseSpeed - 0.1), // Orange: Wanderer
+        color: '#ffaa00', // Orange: Wanderer
+        personality: 'wanderer'
       }
     ];
 
@@ -501,6 +513,17 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       camera.x = Math.max(minX, Math.min(maxX, camera.x));
       camera.y = Math.max(minY, Math.min(maxY, camera.y));
 
+      // Ghost Mode Timer (Scatter / Chase)
+      const now = Date.now();
+      const modeElapsed = now - ghostTimerRef.current;
+      if (ghostModeRef.current === 'scatter' && modeElapsed > 7000) {
+        ghostModeRef.current = 'chase';
+        ghostTimerRef.current = now;
+      } else if (ghostModeRef.current === 'chase' && modeElapsed > 20000) {
+        ghostModeRef.current = 'scatter';
+        ghostTimerRef.current = now;
+      }
+
       // 2. Move Monsters
       const monsters = monstersRef.current;
       monsters.forEach((monster) => {
@@ -548,24 +571,40 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
           let chosenMove = null;
 
           if (validMoves.length > 0) {
-            if (monster.personality === 'chaser') {
-              // Red Ghost: Greedy chase towards player's grid position
-              let minDistance = Infinity;
-              validMoves.forEach((move) => {
-                const nextGx = monster.gridX + move.dx;
-                const nextGy = monster.gridY + move.dy;
-                // Manhattan distance
-                const dist = Math.abs(nextGx - player.gridX) + Math.abs(nextGy - player.gridY);
-                if (dist < minDistance) {
-                  minDistance = dist;
-                  chosenMove = move;
-                }
-              });
+            let targetCell = { x: player.gridX, y: player.gridY };
+
+            // Determine target tile based on mode and personality
+            if (ghostModeRef.current === 'scatter') {
+              if (monster.personality === 'chaser') targetCell = { x: 17, y: 1 }; // Top-Right
+              else if (monster.personality === 'ambusher') targetCell = { x: 1, y: 1 }; // Top-Left
+              else if (monster.personality === 'wanderer') targetCell = { x: 1, y: 17 }; // Bottom-Left
             } else {
-              // Random decision at intersections
-              const randIdx = Math.floor(Math.random() * validMoves.length);
-              chosenMove = validMoves[randIdx];
+              if (monster.personality === 'chaser') {
+                targetCell = { x: player.gridX, y: player.gridY };
+              } else if (monster.personality === 'ambusher') {
+                let pDx = 0, pDy = 0;
+                if (player.facingDir === 'up') pDy = -4;
+                if (player.facingDir === 'down') pDy = 4;
+                if (player.facingDir === 'left') pDx = -4;
+                if (player.facingDir === 'right') pDx = 4;
+                targetCell = { x: player.gridX + pDx, y: player.gridY + pDy };
+              } else if (monster.personality === 'wanderer') {
+                const dist = Math.abs(monster.gridX - player.gridX) + Math.abs(monster.gridY - player.gridY);
+                if (dist > 8) targetCell = { x: player.gridX, y: player.gridY };
+                else targetCell = { x: 1, y: 17 };
+              }
             }
+
+            let minDistance = Infinity;
+            validMoves.forEach((move) => {
+              const nextGx = monster.gridX + move.dx;
+              const nextGy = monster.gridY + move.dy;
+              const dist = Math.abs(nextGx - targetCell.x) + Math.abs(nextGy - targetCell.y);
+              if (dist < minDistance) {
+                minDistance = dist;
+                chosenMove = move;
+              }
+            });
           } else {
             // Dead end, must turn back
             const opposite = moves.find((m) => {

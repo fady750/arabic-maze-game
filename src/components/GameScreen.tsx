@@ -215,6 +215,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           )}
 
           <MazeCanvas
+            level={currentQuestionIndex + 1}
             words={shuffledWords}
             correctWord={currentQuestion?.word}
             onCorrect={handleCorrect}
