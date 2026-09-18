@@ -1009,19 +1009,9 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
           <svg className="w-10 h-10 text-white drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4l-8 10h16z"/></svg>
         </button>
 
-        {/* Middle Row (Left & Right) */}
+        {/* Middle Row (Left & Right swapped for RTL) */}
         <div className="w-full flex flex-row justify-between">
-          <button 
-            className="w-16 h-16 bg-white/30 backdrop-blur-md rounded-2xl flex items-center justify-center active:bg-white/50 active:scale-90 pointer-events-auto shadow-[0_4px_15px_rgba(0,0,0,0.4)] border-2 border-white/40 transition-all"
-            onTouchStart={(e) => { e.preventDefault(); handleDPadStart('left'); }}
-            onTouchEnd={handleDPadEnd}
-            onMouseDown={(e) => { e.preventDefault(); handleDPadStart('left'); }}
-            onMouseUp={handleDPadEnd}
-            onMouseLeave={handleDPadEnd}
-          >
-            <svg className="w-10 h-10 text-white drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M4 12l10-8v16z"/></svg>
-          </button>
-
+          {/* Right Button (Appears on the right in RTL) */}
           <button 
             className="w-16 h-16 bg-white/30 backdrop-blur-md rounded-2xl flex items-center justify-center active:bg-white/50 active:scale-90 pointer-events-auto shadow-[0_4px_15px_rgba(0,0,0,0.4)] border-2 border-white/40 transition-all"
             onTouchStart={(e) => { e.preventDefault(); handleDPadStart('right'); }}
@@ -1031,6 +1021,18 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
             onMouseLeave={handleDPadEnd}
           >
             <svg className="w-10 h-10 text-white drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M20 12l-10 8V4z"/></svg>
+          </button>
+
+          {/* Left Button (Appears on the left in RTL) */}
+          <button 
+            className="w-16 h-16 bg-white/30 backdrop-blur-md rounded-2xl flex items-center justify-center active:bg-white/50 active:scale-90 pointer-events-auto shadow-[0_4px_15px_rgba(0,0,0,0.4)] border-2 border-white/40 transition-all"
+            onTouchStart={(e) => { e.preventDefault(); handleDPadStart('left'); }}
+            onTouchEnd={handleDPadEnd}
+            onMouseDown={(e) => { e.preventDefault(); handleDPadStart('left'); }}
+            onMouseUp={handleDPadEnd}
+            onMouseLeave={handleDPadEnd}
+          >
+            <svg className="w-10 h-10 text-white drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M4 12l10-8v16z"/></svg>
           </button>
         </div>
 
