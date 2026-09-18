@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Trophy, RotateCcw, Home, Sparkles, Star, Coins, Zap, Loader2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { gameAudio } from '../utils/audio';
+import daddcoinImg from '../assets/daddcoin.webp';
 
 interface VictoryModalProps {
   score: number;
@@ -111,7 +112,7 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
           </div>
 
           <div className="bg-slate-900/80 p-3 rounded-xl border border-gray-700 flex flex-col items-center justify-center transform transition hover:scale-105">
-            <Coins className="w-6 h-6 text-yellow-500 mb-1" />
+            <img src={daddcoinImg} alt="Daddcoin" className="w-8 h-8 mb-1 animate-pulse drop-shadow-[0_0_8px_rgba(234,179,8,0.8)]" />
             <span className="text-xs text-gray-400 block mb-1">فِلُوس</span>
             <span className="text-2xl font-black text-yellow-500">{coins}</span>
           </div>

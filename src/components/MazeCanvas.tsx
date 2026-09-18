@@ -55,6 +55,7 @@ interface Monster {
   speed: number;
   color: string;
   personality: 'chaser' | 'ambusher' | 'wanderer';
+  lastDir: 'up' | 'down' | 'left' | 'right' | 'none';
 }
 
 interface MazeCanvasProps {
@@ -138,6 +139,62 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
   const lastRoomVisitedRef = useRef<{ id: number; time: number } | null>(null);
   const cameraRef = useRef({ x: 9 * 32 + 16, y: 9 * 32 + 16, zoom: 1.8 });
   const celebrationRef = useRef<{ active: boolean, progress: number } | null>(null);
+  const frameCountRef = useRef(0);
+
+  // BFS pathfinding — returns the first direction to move toward target
+  const bfsFirstStep = (
+    startX: number, startY: number,
+    goalX: number, goalY: number,
+    walkableCheck: (gx: number, gy: number) => boolean
+  ): { dx: number; dy: number; dir: string } | null => {
+    // Clamp goal to grid bounds
+    const gx = Math.max(0, Math.min(18, goalX));
+    const gy = Math.max(0, Math.min(18, goalY));
+
+    if (startX === gx && startY === gy) return null;
+
+    const visited = new Set<string>();
+    const queue: { x: number; y: number; firstStep: { dx: number; dy: number; dir: string } }[] = [];
+
+    const dirs = [
+      { dx: 0, dy: -1, dir: 'up' },
+      { dx: 0, dy: 1, dir: 'down' },
+      { dx: -1, dy: 0, dir: 'left' },
+      { dx: 1, dy: 0, dir: 'right' }
+    ];
+
+    visited.add(`${startX},${startY}`);
+
+    for (const d of dirs) {
+      const nx = startX + d.dx;
+      const ny = startY + d.dy;
+      if (walkableCheck(nx, ny) && !visited.has(`${nx},${ny}`)) {
+        if (nx === gx && ny === gy) return d;
+        visited.add(`${nx},${ny}`);
+        queue.push({ x: nx, y: ny, firstStep: d });
+      }
+    }
+
+    while (queue.length > 0) {
+      const current = queue.shift()!;
+      for (const d of dirs) {
+        const nx = current.x + d.dx;
+        const ny = current.y + d.dy;
+        const key = `${nx},${ny}`;
+        if (!visited.has(key) && walkableCheck(nx, ny)) {
+          if (nx === gx && ny === gy) return current.firstStep;
+          visited.add(key);
+          queue.push({ x: nx, y: ny, firstStep: current.firstStep });
+        }
+      }
+    }
+
+    // No path found — fallback: pick any walkable adjacent tile
+    for (const d of dirs) {
+      if (walkableCheck(startX + d.dx, startY + d.dy)) return d;
+    }
+    return null;
+  };
 
   // Background Cache Canvas
   const bgCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -279,7 +336,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       gridY: 9,
       targetX: 9,
       targetY: 9,
-      speed: 2,
+      speed: 2.5,
       dir: 'none',
       nextDir: 'none',
       invincibleFrames: 120, // 2 seconds safety on level start
@@ -292,10 +349,19 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       zoom: 1.8
     };
 
-    // Reset monsters based on current level
-    let baseSpeed = 1.5; // 75% for level 1
-    if (level >= 2 && level <= 4) baseSpeed = 1.7; // 85%
-    else if (level >= 5) baseSpeed = 1.9; // 95%
+    // Reset monsters based on current level — distinct speeds per personality
+    let chaserSpeed = 1.3;
+    let ambusherSpeed = 1.1;
+    let wandererSpeed = 0.9;
+    if (level >= 2 && level <= 4) {
+      chaserSpeed = 1.4;
+      ambusherSpeed = 1.2;
+      wandererSpeed = 1.0;
+    } else if (level >= 5) {
+      chaserSpeed = 1.5;
+      ambusherSpeed = 1.3;
+      wandererSpeed = 1.1;
+    }
 
     ghostModeRef.current = 'scatter';
     ghostTimerRef.current = Date.now();
@@ -308,9 +374,10 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         gridY: 5,
         targetX: 5,
         targetY: 5,
-        speed: baseSpeed,
-        color: '#ff0000', // Red: Chaser
-        personality: 'chaser'
+        speed: chaserSpeed,
+        color: '#ff0000', // Red: Chaser (Blinky)
+        personality: 'chaser',
+        lastDir: 'none'
       },
       {
         x: 13 * cellSize + cellSize / 2,
@@ -319,9 +386,10 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         gridY: 5,
         targetX: 13,
         targetY: 5,
-        speed: baseSpeed,
-        color: '#00f0ff', // Cyan: Ambusher
-        personality: 'ambusher'
+        speed: ambusherSpeed,
+        color: '#00f0ff', // Cyan: Ambusher (Inky)
+        personality: 'ambusher',
+        lastDir: 'none'
       },
       {
         x: 5 * cellSize + cellSize / 2,
@@ -330,9 +398,10 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         gridY: 13,
         targetX: 5,
         targetY: 13,
-        speed: Math.max(1, baseSpeed - 0.1), // Orange: Wanderer
-        color: '#ffaa00', // Orange: Wanderer
-        personality: 'wanderer'
+        speed: wandererSpeed,
+        color: '#ffaa00', // Orange: Wanderer (Clyde)
+        personality: 'wanderer',
+        lastDir: 'none'
       }
     ];
 
@@ -527,105 +596,109 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         ghostTimerRef.current = now;
       }
 
-      // 2. Move Monsters
+      // 2. Move Monsters (BFS pathfinding + Pac-Man personality system)
       const monsters = monstersRef.current;
+      frameCountRef.current++;
+
       monsters.forEach((monster) => {
         const mTargetPx = monster.targetX * cellSize + cellSize / 2;
         const mTargetPy = monster.targetY * cellSize + cellSize / 2;
 
-        // Interpolate position
+        // Interpolate position smoothly toward target tile
         if (monster.x < mTargetPx) monster.x = Math.min(monster.x + monster.speed, mTargetPx);
         else if (monster.x > mTargetPx) monster.x = Math.max(monster.x - monster.speed, mTargetPx);
 
         if (monster.y < mTargetPy) monster.y = Math.min(monster.y + monster.speed, mTargetPy);
         else if (monster.y > mTargetPy) monster.y = Math.max(monster.y - monster.speed, mTargetPy);
 
-        // Arrived at target tile
+        // Arrived at target tile — pick the next tile to move to
         if (monster.x === mTargetPx && monster.y === mTargetPy) {
           monster.gridX = monster.targetX;
           monster.gridY = monster.targetY;
 
-          // Find possible moves (prevent reversing direction directly unless dead end)
-          const moves = [
-            { dir: 'up', dx: 0, dy: -1 },
-            { dir: 'down', dx: 0, dy: 1 },
-            { dir: 'left', dx: -1, dy: 0 },
-            { dir: 'right', dx: 1, dy: 0 }
-          ];
+          // Determine the target cell based on mode + personality
+          let goalCell = { x: player.gridX, y: player.gridY };
 
-          // Identify current moving direction
-          let curDir = 'none';
-          if (monster.targetX > monster.gridX) curDir = 'right';
-          else if (monster.targetX < monster.gridX) curDir = 'left';
-          else if (monster.targetY > monster.gridY) curDir = 'down';
-          else if (monster.targetY < monster.gridY) curDir = 'up';
-
-          const validMoves = moves.filter((m) => {
-            // Must be walkable
-            if (!isWalkable(monster.gridX + m.dx, monster.gridY + m.dy)) return false;
-            // Avoid opposite direction
-            if (curDir === 'right' && m.dir === 'left') return false;
-            if (curDir === 'left' && m.dir === 'right') return false;
-            if (curDir === 'up' && m.dir === 'down') return false;
-            if (curDir === 'down' && m.dir === 'up') return false;
-            return true;
-          });
-
-          let chosenMove = null;
-
-          if (validMoves.length > 0) {
-            let targetCell = { x: player.gridX, y: player.gridY };
-
-            // Determine target tile based on mode and personality
-            if (ghostModeRef.current === 'scatter') {
-              if (monster.personality === 'chaser') targetCell = { x: 17, y: 1 }; // Top-Right
-              else if (monster.personality === 'ambusher') targetCell = { x: 1, y: 1 }; // Top-Left
-              else if (monster.personality === 'wanderer') targetCell = { x: 1, y: 17 }; // Bottom-Left
-            } else {
-              if (monster.personality === 'chaser') {
-                targetCell = { x: player.gridX, y: player.gridY };
-              } else if (monster.personality === 'ambusher') {
-                let pDx = 0, pDy = 0;
-                if (player.facingDir === 'up') pDy = -4;
-                if (player.facingDir === 'down') pDy = 4;
-                if (player.facingDir === 'left') pDx = -4;
-                if (player.facingDir === 'right') pDx = 4;
-                targetCell = { x: player.gridX + pDx, y: player.gridY + pDy };
-              } else if (monster.personality === 'wanderer') {
-                const dist = Math.abs(monster.gridX - player.gridX) + Math.abs(monster.gridY - player.gridY);
-                if (dist > 8) targetCell = { x: player.gridX, y: player.gridY };
-                else targetCell = { x: 1, y: 17 };
-              }
-            }
-
-            let minDistance = Infinity;
-            validMoves.forEach((move) => {
-              const nextGx = monster.gridX + move.dx;
-              const nextGy = monster.gridY + move.dy;
-              const dist = Math.abs(nextGx - targetCell.x) + Math.abs(nextGy - targetCell.y);
-              if (dist < minDistance) {
-                minDistance = dist;
-                chosenMove = move;
-              }
-            });
+          if (ghostModeRef.current === 'scatter') {
+            // Scatter: each monster retreats to its own corner
+            if (monster.personality === 'chaser') goalCell = { x: 17, y: 1 };
+            else if (monster.personality === 'ambusher') goalCell = { x: 1, y: 1 };
+            else if (monster.personality === 'wanderer') goalCell = { x: 1, y: 17 };
           } else {
-            // Dead end, must turn back
-            const opposite = moves.find((m) => {
-              if (curDir === 'right' && m.dir === 'left') return true;
-              if (curDir === 'left' && m.dir === 'right') return true;
-              if (curDir === 'up' && m.dir === 'down') return true;
-              if (curDir === 'down' && m.dir === 'up') return true;
-              return false;
-            });
-            if (opposite && isWalkable(monster.gridX + opposite.dx, monster.gridY + opposite.dy)) {
-              chosenMove = opposite;
+            // Chase: personality-driven targeting
+            if (monster.personality === 'chaser') {
+              // Blinky: directly targets the player
+              goalCell = { x: player.gridX, y: player.gridY };
+            } else if (monster.personality === 'ambusher') {
+              // Inky: targets 4 tiles ahead of where the player is facing
+              let pDx = 0, pDy = 0;
+              if (player.facingDir === 'up') pDy = -4;
+              if (player.facingDir === 'down') pDy = 4;
+              if (player.facingDir === 'left') pDx = -4;
+              if (player.facingDir === 'right') pDx = 4;
+              goalCell = {
+                x: Math.max(0, Math.min(18, player.gridX + pDx)),
+                y: Math.max(0, Math.min(18, player.gridY + pDy))
+              };
+            } else if (monster.personality === 'wanderer') {
+              // Clyde: chases most of the time, flanks when close
+              const dist = Math.abs(monster.gridX - player.gridX) + Math.abs(monster.gridY - player.gridY);
+              if (dist > 4) {
+                // Far away: hunt the player directly
+                goalCell = { x: player.gridX, y: player.gridY };
+              } else {
+                // Close: flank from the opposite side of the player
+                const flankX = Math.max(0, Math.min(18, player.gridX + (player.gridX - monster.gridX)));
+                const flankY = Math.max(0, Math.min(18, player.gridY + (player.gridY - monster.gridY)));
+                goalCell = { x: flankX, y: flankY };
+              }
             }
           }
 
-          if (chosenMove) {
-            monster.targetX = monster.gridX + chosenMove.dx;
-            monster.targetY = monster.gridY + chosenMove.dy;
+          // Use BFS to find the best first step toward the goal
+          const bfsResult = bfsFirstStep(
+            monster.gridX, monster.gridY,
+            goalCell.x, goalCell.y,
+            isWalkable
+          );
+
+          if (bfsResult) {
+            // Prevent reversing direction unless it's the only option (dead end)
+            const opposites: Record<string, string> = { up: 'down', down: 'up', left: 'right', right: 'left' };
+            const isReverse = monster.lastDir !== 'none' && bfsResult.dir === opposites[monster.lastDir];
+
+            if (!isReverse) {
+              monster.targetX = monster.gridX + bfsResult.dx;
+              monster.targetY = monster.gridY + bfsResult.dy;
+              monster.lastDir = bfsResult.dir as Monster['lastDir'];
+            } else {
+              // BFS wants to reverse — check if there are other walkable options
+              const dirs = [
+                { dx: 0, dy: -1, dir: 'up' },
+                { dx: 0, dy: 1, dir: 'down' },
+                { dx: -1, dy: 0, dir: 'left' },
+                { dx: 1, dy: 0, dir: 'right' }
+              ];
+              const alternatives = dirs.filter(d =>
+                d.dir !== opposites[monster.lastDir] &&
+                isWalkable(monster.gridX + d.dx, monster.gridY + d.dy)
+              );
+
+              if (alternatives.length > 0) {
+                // Pick a random alternative to avoid predictability
+                const alt = alternatives[Math.floor(Math.random() * alternatives.length)];
+                monster.targetX = monster.gridX + alt.dx;
+                monster.targetY = monster.gridY + alt.dy;
+                monster.lastDir = alt.dir as Monster['lastDir'];
+              } else {
+                // True dead end — must reverse
+                monster.targetX = monster.gridX + bfsResult.dx;
+                monster.targetY = monster.gridY + bfsResult.dy;
+                monster.lastDir = bfsResult.dir as Monster['lastDir'];
+              }
+            }
           }
+          // If no BFS result, monster stays put (shouldn't happen in practice)
         }
       });
 
@@ -636,13 +709,13 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
           const dy = player.y - monster.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
 
-          // Overlap check (circle radius sum roughly 24px)
-          if (dist < 20) {
+          // Overlap check (hitbox 16px)
+          if (dist < 16) {
             gameAudio.playHit();
             onLoseLife();
 
-            // Flash and reset positions
-            player.invincibleFrames = 120;
+            // Flash and reset positions with extra invincibility (3s)
+            player.invincibleFrames = 180;
             player.x = 9 * cellSize + cellSize / 2;
             player.y = 9 * cellSize + cellSize / 2;
             player.gridX = 9;
@@ -654,26 +727,21 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
             player.facingDir = 'left';
 
             // Reset monsters positions
-            monsters[0].x = 5 * cellSize + cellSize / 2;
-            monsters[0].y = 5 * cellSize + cellSize / 2;
-            monsters[0].gridX = 5;
-            monsters[0].gridY = 5;
-            monsters[0].targetX = 5;
-            monsters[0].targetY = 5;
-
-            monsters[1].x = 13 * cellSize + cellSize / 2;
-            monsters[1].y = 5 * cellSize + cellSize / 2;
-            monsters[1].gridX = 13;
-            monsters[1].gridY = 5;
-            monsters[1].targetX = 13;
-            monsters[1].targetY = 5;
-
-            monsters[2].x = 5 * cellSize + cellSize / 2;
-            monsters[2].y = 13 * cellSize + cellSize / 2;
-            monsters[2].gridX = 5;
-            monsters[2].gridY = 13;
-            monsters[2].targetX = 5;
-            monsters[2].targetY = 13;
+            const spawnPositions = [
+              { gx: 5, gy: 5 },
+              { gx: 13, gy: 5 },
+              { gx: 5, gy: 13 }
+            ];
+            monsters.forEach((m, i) => {
+              const sp = spawnPositions[i];
+              m.x = sp.gx * cellSize + cellSize / 2;
+              m.y = sp.gy * cellSize + cellSize / 2;
+              m.gridX = sp.gx;
+              m.gridY = sp.gy;
+              m.targetX = sp.gx;
+              m.targetY = sp.gy;
+              m.lastDir = 'none';
+            });
           }
         });
       }
@@ -885,29 +953,33 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         }
       }
 
-      // 5. Draw Monsters
+      // 5. Draw Monsters (animated ghost with wavy skirt)
+      const frame = frameCountRef.current;
       monsters.forEach((monster) => {
         const mx = monster.x;
         const my = monster.y;
+        const waveOffset = Math.sin(frame * 0.15) * 2; // Animate skirt wave
 
         // Draw ghost dome body
         ctx.beginPath();
         ctx.arc(mx, my - 2, 10, Math.PI, 0, false); // top dome
         ctx.lineTo(mx + 10, my + 10);
 
-        // Wavy bottom skirt
-        ctx.lineTo(mx + 6, my + 7);
-        ctx.lineTo(mx + 2, my + 10);
-        ctx.lineTo(mx - 2, my + 7);
-        ctx.lineTo(mx - 6, my + 10);
-        ctx.lineTo(mx - 10, my + 7);
+        // Animated wavy bottom skirt
+        ctx.lineTo(mx + 7, my + 7 + waveOffset);
+        ctx.lineTo(mx + 4, my + 10);
+        ctx.lineTo(mx + 1, my + 7 - waveOffset);
+        ctx.lineTo(mx - 2, my + 10);
+        ctx.lineTo(mx - 5, my + 7 + waveOffset);
+        ctx.lineTo(mx - 8, my + 10);
+        ctx.lineTo(mx - 10, my + 7 - waveOffset);
 
         ctx.closePath();
         ctx.fillStyle = monster.color;
         ctx.shadowColor = monster.color;
-        ctx.shadowBlur = 8;
+        ctx.shadowBlur = 10;
         ctx.fill();
-        ctx.shadowBlur = 0; // Reset
+        ctx.shadowBlur = 0;
 
         // Draw white eyes
         ctx.fillStyle = '#ffffff';
@@ -916,16 +988,12 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         ctx.arc(mx + 4, my - 2, 3, 0, Math.PI * 2);
         ctx.fill();
 
-        // Draw pupils looking in movement direction
-        ctx.fillStyle = '#0000ff';
+        // Draw pupils looking in movement direction (using lastDir)
+        ctx.fillStyle = '#1a1a6e';
         let pupilDx = 0;
         let pupilDy = 0;
 
-        let mDir = 'none';
-        if (monster.targetX > monster.gridX) mDir = 'right';
-        else if (monster.targetX < monster.gridX) mDir = 'left';
-        else if (monster.targetY > monster.gridY) mDir = 'down';
-        else if (monster.targetY < monster.gridY) mDir = 'up';
+        const mDir = monster.lastDir || 'none';
 
         if (mDir === 'up') pupilDy = -1.5;
         else if (mDir === 'down') pupilDy = 1.5;
