@@ -245,3 +245,182 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(99, 102, 241, 0.6);
 }
+
+/* New Welcome Screen Styles */
+.welcome-screen-new {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  /* Deep space cyan-navy background */
+  background: radial-gradient(circle at center, #113645, #08171d);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  gap: 30px;
+  direction: rtl;
+  /* Ensure the whole screen handles RTL properly */
+}
+
+.welcome-header-new {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+}
+
+.welcome-stats-bg {
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 25px;
+  min-width: 250px;
+  height: 60px;
+  gap: 15px;
+  direction: ltr;
+  /* Force LTR so Question Coin is Left, DaddCoin is Right */
+}
+
+.welcome-q-coin,
+.welcome-dadd-coin {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+
+.welcome-stat-text {
+  font-size: 24px;
+  font-weight: 900;
+  font-family: 'Arial Black', Impact, sans-serif;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  margin-top: 2px;
+}
+
+.q-count {
+  color: white;
+}
+
+.xp-count {
+  color: #ffcc00;
+  /* Yellow */
+}
+
+.welcome-stat-arrow {
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.welcome-body-new {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 800px;
+  margin-top: 50px;
+  /* Push down to avoid header */
+}
+
+.welcome-description-img {
+  width: 100%;
+  max-height: 60vh;
+  object-fit: contain;
+}
+
+.welcome-footer-new {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 20px;
+}
+
+.welcome-start-btn-new {
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: transparent;
+  border: none;
+  width: 260px;
+  height: 85px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  font-weight: 900;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.2s;
+  padding-bottom: 12px;
+  /* Offset text to center properly on the graphic */
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.welcome-start-btn-new:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.welcome-start-btn-new:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.welcome-loading,
+.welcome-error-new p {
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+/* Responsiveness */
+@media (max-width: 768px) {
+  .welcome-screen-new {
+    justify-content: center;
+    gap: 15px;
+  }
+
+  .welcome-header-new {
+    position: relative;
+    top: 0;
+    right: 0;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .welcome-body-new {
+    margin-top: 0;
+  }
+
+  .welcome-stats-bg {
+    min-width: 220px;
+    height: 50px;
+    padding: 2px 20px;
+  }
+
+  .welcome-q-coin,
+  .welcome-dadd-coin {
+    width: 25px;
+    height: 25px;
+  }
+
+  .welcome-stat-text {
+    font-size: 18px;
+  }
+
+  .welcome-start-btn-new {
+    width: 180px;
+    height: 55px;
+    font-size: 22px;
+    padding-bottom: 5px;
+  }
+
+  .welcome-description-img {
+    max-height: 45vh;
+  }
+}

@@ -288,7 +288,12 @@ function App() {
   return (
     <div className="w-screen min-h-screen overflow-x-hidden flex items-center justify-center">
       {view === 'welcome' && (
-        <WelcomeScreen onStart={handleStartGame} />
+        <WelcomeScreen 
+          onStart={handleStartGame} 
+          totalQuestions={apiQuestions.length}
+          isLoading={isLoading}
+          error={error}
+        />
       )}
 
       {view === 'playing' && (
