@@ -16,7 +16,6 @@ export const ErrorScreen: React.FC<ErrorScreenProps> = ({
   titleLine1 = 'يبدو',
   titleLine2 = 'أن حكيم',
   titleLine3 = 'تائه',
-  description = 'لا يمكننا العثور على هذه الصفحة. دعنا نذهب إلى مكان مألوف.',
   buttonText = 'العودة للرئيسية',
   onExit,
   hideButton = false,
@@ -37,11 +36,6 @@ export const ErrorScreen: React.FC<ErrorScreenProps> = ({
             </>
           )}
         </h1>
-
-        {/* Supporting Text */}
-        <p className="error-screen__description">
-          {description}
-        </p>
 
         {/* Call to Action Navigation Button */}
         {!hideButton && onExit && (

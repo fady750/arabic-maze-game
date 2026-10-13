@@ -163,7 +163,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
   };
 
   return (
-    <div className="game-screen w-full max-w-[1440px] mx-auto p-3 sm:p-5 lg:p-7 flex flex-col items-center justify-start gap-3 lg:gap-5">
+    <div className="game-screen w-full max-w-full lg:max-w-none mx-auto p-3 sm:p-5 lg:p-7 flex flex-col items-center justify-start gap-3 lg:gap-5">
 
       {/* 1. Header panel */}
       <header className="maze-header glass-panel" dir="ltr">

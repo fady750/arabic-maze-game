@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useMemo } from 'react';
-import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
 import { gameAudio } from '../utils/audio';
 import robotImg from '../assets/robot.png';
 import robotSideImg from '../assets/robot-side.png';
@@ -35,17 +34,31 @@ const WARP_PORTALS = [
   { x: 9, y: 18, targetX: 9, targetY: 1, exitDir: 'down', color: '#ff007f' }
 ];
 
-// Desktop gets a wider camera so both side caves can be visible together;
-// touch devices keep the closer view for easier movement and readability.
-const FULL_MAZE_ZOOM = 1;
-const DESKTOP_GAMEPLAY_ZOOM = 1.8;
-const TABLET_GAMEPLAY_ZOOM = 1.8;
-// Mobile gets a wider view of the maze so movement feels less cramped and
-// the player can better anticipate nearby paths and enemies.
-const MOBILE_GAMEPLAY_ZOOM = 1.0;
+// Full-width maze metrics: 19 cells * 32px = 608px world width
+const CELL_SIZE = 32;
+const MAZE_TILES_COUNT = 19;
+const MAZE_WORLD_SIZE = MAZE_TILES_COUNT * CELL_SIZE; // 608px
+const MAZE_VIEW_PERCENTAGE = 0.75; // 75% zoom view
 const PLAYER_MOVE_SPEED = 1.25;
 const ENEMY_SPEED_REMAINING_RATIO = 0.7;
-const INTRO_DURATION_FRAMES = 90;
+const computeInitialMazeZoom = () => {
+  if (typeof window !== 'undefined') {
+    const isBig = window.innerWidth >= 768;
+    const estWidth = window.innerWidth >= 1024
+      ? Math.min(1920, window.innerWidth) - 380
+      : window.innerWidth - 32;
+    const estHeight = Math.max(300, window.innerHeight - 160);
+    if (isBig) {
+      return {
+        zoomX: estWidth / MAZE_WORLD_SIZE,
+        zoomY: (estHeight / MAZE_WORLD_SIZE) * (1 / MAZE_VIEW_PERCENTAGE),
+      };
+    }
+    const mZoom = estWidth / MAZE_WORLD_SIZE;
+    return { zoomX: mZoom, zoomY: mZoom };
+  }
+  return { zoomX: 1.33, zoomY: 1.33 };
+};
 
 // Room Centers & Colors
 const ROOMS = [
@@ -149,10 +162,10 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
   // Local state for wrong room cooldowns to prevent double triggers
   const lastRoomVisitedRef = useRef<{ id: number; time: number } | null>(null);
-  const gameplayZoomRef = useRef(DESKTOP_GAMEPLAY_ZOOM);
-  const cameraRef = useRef({ x: 9 * 32 + 16, y: 9 * 32 + 16, zoom: DESKTOP_GAMEPLAY_ZOOM });
+  const initialZoom = computeInitialMazeZoom();
+  const gameplayZoomRef = useRef(initialZoom);
+  const cameraRef = useRef({ x: 9 * 32 + 16, y: 9 * 32 + 16, zoomX: initialZoom.zoomX, zoomY: initialZoom.zoomY });
   const celebrationRef = useRef<{ active: boolean, progress: number } | null>(null);
-  const introRef = useRef<{ active: boolean, progress: number }>({ active: true, progress: 0 });
   const frameCountRef = useRef(0);
   const lowPowerDeviceRef = useRef(false);
 
@@ -349,17 +362,39 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
   const activeDPadDirRef = useRef<string | null>(null);
 
-  // D-Pad handlers
-  const handleDPadStart = (dir: string) => {
-    if (isPaused || lives <= 0) return;
-    activeDPadDirRef.current = dir;
-  };
-
-  const handleDPadEnd = () => {
-    activeDPadDirRef.current = null;
-  };
-
   const cellSize = 32;
+
+  const computeMazeZoom = () => {
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        if (rect.width >= 768) {
+          return {
+            zoomX: rect.width / MAZE_WORLD_SIZE,
+            zoomY: (rect.height / MAZE_WORLD_SIZE) * (1 / MAZE_VIEW_PERCENTAGE),
+          };
+        }
+        const mZoom = rect.width / MAZE_WORLD_SIZE;
+        return { zoomX: mZoom, zoomY: mZoom };
+      }
+    }
+    if (typeof window !== 'undefined') {
+      const isBig = window.innerWidth >= 768;
+      const estWidth = window.innerWidth >= 1024
+        ? Math.min(1920, window.innerWidth) - 380
+        : window.innerWidth - 32;
+      const estHeight = Math.max(300, window.innerHeight - 160);
+      if (isBig) {
+        return {
+          zoomX: estWidth / MAZE_WORLD_SIZE,
+          zoomY: (estHeight / MAZE_WORLD_SIZE) * (1 / MAZE_VIEW_PERCENTAGE),
+        };
+      }
+      const mZoom = estWidth / MAZE_WORLD_SIZE;
+      return { zoomX: mZoom, zoomY: mZoom };
+    }
+    return { zoomX: 1.33, zoomY: 1.33 };
+  };
 
   // Initialize monsters
   const resetEntities = () => {
@@ -378,23 +413,20 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       facingDir: 'left',
     };
 
+    const targetZoom = computeMazeZoom();
+    gameplayZoomRef.current = targetZoom;
+
     cameraRef.current = {
       x: 9 * cellSize + cellSize / 2,
       y: 9 * cellSize + cellSize / 2,
-      zoom: FULL_MAZE_ZOOM
+      zoomX: targetZoom.zoomX,
+      zoomY: targetZoom.zoomY
     };
 
     // Keep the existing level/device tuning, then reduce it by 30% so enemies
     // remain capable of chasing without overwhelming the player.
     const isMobileDevice = lowPowerDeviceRef.current;
-    const isMobileViewport = typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches;
-    const isTabletViewport = typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches;
     const isEasyDevice = isMobileDevice || (typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches);
-    gameplayZoomRef.current = isTabletViewport
-      ? TABLET_GAMEPLAY_ZOOM
-      : isMobileViewport
-        ? MOBILE_GAMEPLAY_ZOOM
-        : DESKTOP_GAMEPLAY_ZOOM;
     let chaserSpeed = isEasyDevice ? 0.78 : 1.3;
     let ambusherSpeed = isEasyDevice ? 0.66 : 1.1;
     let wandererSpeed = isEasyDevice ? 0.56 : 0.9;
@@ -414,7 +446,6 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
     ghostModeRef.current = 'scatter';
     ghostTimerRef.current = Date.now();
-    introRef.current = { active: true, progress: 0 };
 
     monstersRef.current = [
       {
@@ -559,6 +590,13 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       const nextHeight = Math.max(1, Math.floor(bounds.height * 2));
       if (canvas.width !== nextWidth) canvas.width = nextWidth;
       if (canvas.height !== nextHeight) canvas.height = nextHeight;
+
+      const nextZoom = computeMazeZoom();
+      gameplayZoomRef.current = nextZoom;
+      if (!celebrationRef.current) {
+        cameraRef.current.zoomX = nextZoom.zoomX;
+        cameraRef.current.zoomY = nextZoom.zoomY;
+      }
     };
 
     resizeCanvas();
@@ -650,16 +688,17 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       camera.x += (player.x - camera.x) * camLerp;
       camera.y += (player.y - camera.y) * camLerp;
 
-      const zoom = camera.zoom;
-      const visibleWidth = Math.min(19 * cellSize, canvas.width / (2 * zoom));
-      const visibleHeight = Math.min(19 * cellSize, canvas.height / (2 * zoom));
+      const zoomX = camera.zoomX;
+      const zoomY = camera.zoomY;
+      const visibleWidth = Math.min(MAZE_WORLD_SIZE, canvas.width / (2 * zoomX));
+      const visibleHeight = Math.min(MAZE_WORLD_SIZE, canvas.height / (2 * zoomY));
       const minX = visibleWidth / 2;
-      const maxX = (19 * cellSize) - minX;
+      const maxX = MAZE_WORLD_SIZE - minX;
       const minY = visibleHeight / 2;
-      const maxY = (19 * cellSize) - minY;
+      const maxY = MAZE_WORLD_SIZE - minY;
 
-      camera.x = Math.max(minX, Math.min(maxX, camera.x));
-      camera.y = Math.max(minY, Math.min(maxY, camera.y));
+      camera.x = minX < maxX ? Math.max(minX, Math.min(maxX, camera.x)) : MAZE_WORLD_SIZE / 2;
+      camera.y = minY < maxY ? Math.max(minY, Math.min(maxY, camera.y)) : MAZE_WORLD_SIZE / 2;
 
       // Ghost Mode Timer (Scatter / Chase)
       const now = Date.now();
@@ -871,10 +910,13 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
       ctx.save();
       ctx.scale(2, 2);
-      const zoom = cameraRef.current.zoom;
+      const zoomX = cameraRef.current.zoomX;
+      const zoomY = cameraRef.current.zoomY;
       ctx.translate(canvas.width / 4, canvas.height / 4);
-      ctx.scale(zoom, zoom);
+      ctx.scale(zoomX, zoomY);
       ctx.translate(-cameraRef.current.x, -cameraRef.current.y);
+
+      const stretchRatio = zoomY > 0 ? (zoomX / zoomY) : 1;
 
       const player = playerRef.current;
       const monsters = monstersRef.current;
@@ -890,8 +932,8 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       // for every portal on every animation frame, which caused a noticeable frame
       // drop when a portal entered the camera viewport.
       const now = Date.now();
-      const visibleWorldWidth = canvas.width / (2 * zoom);
-      const visibleWorldHeight = canvas.height / (2 * zoom);
+      const visibleWorldWidth = canvas.width / (2 * zoomX);
+      const visibleWorldHeight = canvas.height / (2 * zoomY);
       const halfVisibleWidth = visibleWorldWidth / 2;
       const halfVisibleHeight = visibleWorldHeight / 2;
       const isLowPowerDevice = lowPowerDeviceRef.current;
@@ -910,6 +952,13 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
         const baseAngle = (now / 600) % (Math.PI * 2);
         const radius = cellSize / 2;
+
+        ctx.save();
+        ctx.translate(px, py);
+        if (stretchRatio !== 1) {
+          ctx.scale(1 / stretchRatio, 1);
+        }
+        ctx.translate(-px, -py);
 
         if (isLowPowerDevice) {
           // A single rotating arc preserves the portal cue without the expensive
@@ -931,6 +980,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
           ctx.beginPath();
           ctx.arc(px, py, radius + 2, baseAngle + Math.PI, baseAngle + Math.PI * 1.75);
           ctx.stroke();
+          ctx.restore();
           ctx.restore();
           return;
         }
@@ -992,6 +1042,8 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         ctx.arc(px, py, radius + 2 + Math.sin(now / 200) * 1.5, 0, Math.PI * 2);
         ctx.stroke();
         ctx.restore();
+
+        ctx.restore();
       });
 
       // 3. Draw room answers; shrink long labels to keep them inside the room.
@@ -1005,6 +1057,13 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         const maxTextWidth = cellSize * 2.8;
         let fontSize = Math.min(24, cellSize * 0.75);
 
+        ctx.save();
+        ctx.translate(textX, textY);
+        if (stretchRatio !== 1) {
+          ctx.scale(1 / stretchRatio, 1);
+        }
+        ctx.translate(-textX, -textY);
+
         ctx.font = `bold ${fontSize}px FontGame`;
         while (fontSize > 9 && ctx.measureText(answerText).width > maxTextWidth) {
           fontSize -= 1;
@@ -1017,6 +1076,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
         ctx.fillStyle = '#ffffff';
         ctx.fillText(answerText, textX, textY, maxTextWidth);
+        ctx.restore();
       });
 
       // 4. Draw Player
@@ -1044,12 +1104,15 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
         if (currentImg) {
           ctx.save();
+          ctx.translate(player.x, player.y);
+          if (stretchRatio !== 1) {
+            ctx.scale(1 / stretchRatio, 1);
+          }
           ctx.shadowColor = '#00f0ff';
           ctx.shadowBlur = isInvincible ? 15 : 6;
           const size = 26; // Fits nicely in 32x32 cell
 
           if (flipHorizontal) {
-            ctx.translate(player.x, player.y);
             ctx.scale(-1, 1);
             ctx.drawImage(
               currentImg,
@@ -1061,18 +1124,24 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
           } else {
             ctx.drawImage(
               currentImg,
-              player.x - size / 2,
-              player.y - size / 2,
+              -size / 2,
+              -size / 2,
               size,
               size
             );
           }
           ctx.restore();
         } else {
+          ctx.save();
+          ctx.translate(player.x, player.y);
+          if (stretchRatio !== 1) {
+            ctx.scale(1 / stretchRatio, 1);
+          }
           ctx.beginPath();
-          ctx.arc(player.x, player.y, 11, 0, Math.PI * 2);
+          ctx.arc(0, 0, 11, 0, Math.PI * 2);
           ctx.fillStyle = '#fff01f';
           ctx.fill();
+          ctx.restore();
         }
       }
 
@@ -1082,6 +1151,13 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         const mx = monster.x;
         const my = monster.y;
         const waveOffset = Math.sin(frame * 0.15) * 2; // Animate skirt wave
+
+        ctx.save();
+        ctx.translate(mx, my);
+        if (stretchRatio !== 1) {
+          ctx.scale(1 / stretchRatio, 1);
+        }
+        ctx.translate(-mx, -my);
 
         // Draw ghost dome body
         ctx.beginPath();
@@ -1127,6 +1203,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         ctx.arc(mx - 4 + pupilDx, my - 2 + pupilDy, 1.5, 0, Math.PI * 2);
         ctx.arc(mx + 4 + pupilDx, my - 2 + pupilDy, 1.5, 0, Math.PI * 2);
         ctx.fill();
+        ctx.restore();
       });
 
       ctx.restore();
@@ -1142,7 +1219,10 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
         // Easing cubic out
         const easeRatio = 1 - Math.pow(1 - ratio, 3);
         const gameplayZoom = gameplayZoomRef.current;
-        cameraRef.current.zoom = gameplayZoom + (6.0 - gameplayZoom) * easeRatio;
+        const targetZoomX = gameplayZoom.zoomX * 2.2;
+        const targetZoomY = gameplayZoom.zoomY * 2.2;
+        cameraRef.current.zoomX = gameplayZoom.zoomX + (targetZoomX - gameplayZoom.zoomX) * easeRatio;
+        cameraRef.current.zoomY = gameplayZoom.zoomY + (targetZoomY - gameplayZoom.zoomY) * easeRatio;
 
         // Pull camera heavily towards player during zoom
         const player = playerRef.current;
@@ -1151,18 +1231,9 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
         if (p >= maxFrames) {
           celebrationRef.current = null;
-          cameraRef.current.zoom = gameplayZoom; // reset
+          cameraRef.current.zoomX = gameplayZoom.zoomX;
+          cameraRef.current.zoomY = gameplayZoom.zoomY;
           onCorrect();
-        }
-      } else if (introRef.current.active) {
-        introRef.current.progress++;
-        const ratio = Math.min(introRef.current.progress / INTRO_DURATION_FRAMES, 1);
-        const easeRatio = 1 - Math.pow(1 - ratio, 3);
-        cameraRef.current.zoom = FULL_MAZE_ZOOM + (gameplayZoomRef.current - FULL_MAZE_ZOOM) * easeRatio;
-
-        if (ratio >= 1) {
-          introRef.current.active = false;
-          cameraRef.current.zoom = gameplayZoomRef.current;
         }
       } else {
         updateGame();

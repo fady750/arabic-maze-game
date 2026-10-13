@@ -152,6 +152,8 @@ function App() {
       if (newToken) {
         fetchOptions.headers = { ...(fetchOptions.headers || {}), Authorization: `Bearer ${newToken}` };
         res = await fetch(url, fetchOptions);
+      } else {
+        setError('تعذر تجديد رمز الدخول.');
       }
     }
     
@@ -169,28 +171,36 @@ function App() {
       try {
         const urlParams = new URLSearchParams(window.location.search);
         const lessonId = urlParams.get('lessonId');
-        const token = urlParams.get('token');
+        const isDemo = urlParams.get('demo') === 'true';
 
-        const isDevelopment = import.meta.env.MODE === 'development';
-
-        if (!lessonId) {
-          if (isDevelopment) {
-            console.warn('Development mode: Missing URL parameters. Using mock evaluationId ("dev-evaluation") and accessCode ("dev-test"). Skipping API fetch and using local mock questions.');
-            
-            // Provide realistic test data so the game can open normally
-            setApiQuestions(QUESTIONS);
-            setIsLoading(false);
-            return;
-          }
-          
-          setError('عذراً، الرابط غير مكتمل. يرجى التأكد من وجود رقم التقييم ورمز المرور.');
+        // 1. Check for Lesson ID
+        if (!lessonId && !isDemo) {
+          console.warn('Missing lessonId parameter in URL.');
+          setError('Missing lessonId in URL parameters.');
           setIsLoading(false);
           return;
         }
 
+        if (isDemo && !lessonId) {
+          setApiQuestions(QUESTIONS);
+          setIsLoading(false);
+          return;
+        }
+
+        // 2. Check for Token / Refresh Endpoint Error
+        if (!isDemo) {
+          const token = await refreshAccessToken();
+          if (!token) {
+            console.warn('Failed to obtain authentication token via refresh endpoint.');
+            setError('تعذر الحصول على رمز الدخول.');
+            setIsLoading(false);
+            return;
+          }
+        }
+
         const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
-        // 1. Create Session
+        // 3. Create Session
         try {
           const sessionRes = await apiFetch(`${baseUrl}/api/v1/student/games/1/sessions?lessonId=${lessonId}`, {
             method: 'POST',
@@ -205,7 +215,7 @@ function App() {
           console.error("Failed to create session", e);
         }
 
-        // 2. Fetch Questions
+        // 4. Fetch Questions (Check Question Endpoint)
         const response = await apiFetch(`${baseUrl}/api/v1/student/games/1/questions?lessonId=${lessonId}`);
 
         if (!response.ok) {
@@ -452,8 +462,8 @@ function App() {
     });
   };
 
-  if (error) {
-    return <ErrorScreen description={error} onExit={handleExitSite} />;
+  if (error || (!isLoading && apiQuestions.length === 0)) {
+    return <ErrorScreen onExit={handleExitSite} />;
   }
 
   if (isLoading) {

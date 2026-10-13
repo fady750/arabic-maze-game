@@ -331,13 +331,21 @@ body.game-active #root {
    square, but its maximum size now follows the available viewport instead of
    being limited by the question card's fixed desktop width. */
 .maze-canvas-shell {
-  flex: 0 1 auto;
+  width: 100%;
+  height: 100%;
+  flex: 1 1 auto;
+}
+
+.maze-canvas-shell canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 @media (min-width: 1024px) {
   .game-screen {
     width: 100%;
-    max-width: 1920px;
+    max-width: none;
     padding: clamp(12px, 1.5vw, 28px);
     gap: clamp(8px, 1vw, 16px);
   }
