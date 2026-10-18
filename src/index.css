@@ -309,8 +309,9 @@ body.game-active #root {
   width: 100%;
   max-height: 38%;
   overflow: hidden;
-  overflow-wrap: anywhere;
-  word-break: normal;
+  overflow-wrap: normal;
+  word-break: keep-all;
+  hyphens: none;
   font-size: clamp(1.4rem, 9cqw, 3.5rem) !important;
   line-height: 1.25;
   display: -webkit-box;
@@ -382,8 +383,9 @@ body.game-active #root {
     display: block;
     -webkit-line-clamp: unset;
     white-space: normal;
-    overflow-wrap: anywhere;
-    word-break: normal;
+    overflow-wrap: normal;
+    word-break: keep-all;
+    hyphens: none;
     font-size: clamp(2rem, 15cqw, 5rem) !important;
   }
 
@@ -658,8 +660,9 @@ body.game-active #root {
     overflow-x: hidden;
     -webkit-line-clamp: unset;
     white-space: normal;
-    overflow-wrap: anywhere;
-    word-break: normal;
+    overflow-wrap: normal;
+    word-break: keep-all;
+    hyphens: none;
   }
 
   .question-audio {
@@ -1349,8 +1352,9 @@ body.game-active #root {
   text-align: center !important;
   line-height: 1.15 !important;
   overflow: hidden !important;
-  overflow-wrap: anywhere !important;
-  word-break: normal !important;
+  overflow-wrap: normal !important;
+  word-break: keep-all !important;
+  hyphens: none !important;
   -webkit-line-clamp: unset !important;
   min-height: 0 !important;
 }
@@ -1525,3 +1529,46 @@ body.game-active #root {
 .question-audio-float {
   animation: question-audio-float 2.8s ease-in-out infinite;
 }
+
+/* ── Submitting Spinner Overlay ─────────────────────────────────────────── */
+.submitting-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(5, 11, 25, 0.75);
+  backdrop-filter: blur(10px) saturate(1.2);
+  -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: submittingFadeIn 0.3s ease-out;
+}
+
+.submitting-spinner {
+  width: 56px;
+  height: 56px;
+  border: 4px solid rgba(255, 255, 255, 0.15);
+  border-top-color: #00f0ff;
+  border-right-color: #00f0ff;
+  border-radius: 50%;
+  animation: submittingSpin 0.75s linear infinite;
+  filter: drop-shadow(0 0 12px rgba(0, 240, 255, 0.7));
+}
+
+@keyframes submittingSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes submittingFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+

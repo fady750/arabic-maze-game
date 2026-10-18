@@ -164,6 +164,7 @@ function App() {
   const [questionStartTime, setQuestionStartTime] = useState<number>(0);
   const [victoryData, setVictoryData] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false);
   const [isRestarting, setIsRestarting] = useState(false);
 
   useEffect(() => {
@@ -342,18 +343,23 @@ function App() {
       }
     }
 
+    setIsSubmitting(false);
+    isSubmittingRef.current = false;
     handleStartGame();
     setIsRestarting(false);
   };
 
   const submitGameSession = async (finalAnswers: any[]) => {
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
+
     if (!sessionId || !sessionToken) {
       setView('victory');
+      isSubmittingRef.current = false;
       return;
     }
 
     setIsSubmitting(true);
-    setView('victory');
 
     try {
       const baseUrl = import.meta.env.VITE_API_BASE_URL;
@@ -402,6 +408,8 @@ function App() {
       console.error("Error submitting session:", e);
     } finally {
       setIsSubmitting(false);
+      isSubmittingRef.current = false;
+      setView('victory');
     }
   };
 
@@ -454,9 +462,8 @@ function App() {
       const nextLives = prev - 1;
       if (nextLives <= 0) {
         gameAudio.playGameOver();
-        // The game is completely finished, show the ONLY final results screen
+        // The game is completely finished, submit answers while showing spinner
         submitGameSession(answersRef.current);
-        setView('victory');
       }
       return nextLives;
     });
@@ -499,6 +506,11 @@ function App() {
         />
       )}
 
+      {isSubmitting && (
+        <div className="submitting-overlay" aria-busy="true">
+          <div className="submitting-spinner" />
+        </div>
+      )}
 
       {view === 'victory' && (
         <VictoryModal

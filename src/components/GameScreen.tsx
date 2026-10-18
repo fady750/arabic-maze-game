@@ -215,7 +215,15 @@ export const GameScreen: React.FC<GameScreenProps> = ({
               )}
 
               {hasQuestionText && (
-                <div ref={questionTextRef} className="question-text text-white font-black text-center w-full relative z-10">
+                <div
+                  ref={questionTextRef}
+                  className="question-text text-white font-black text-center w-full relative z-10"
+                  style={{
+                    overflowWrap: 'normal',
+                    wordBreak: 'keep-all',
+                    hyphens: 'none'
+                  }}
+                >
                   {currentQuestion.questionText}
                 </div>
               )}
