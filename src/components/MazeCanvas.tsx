@@ -43,19 +43,11 @@ const PLAYER_MOVE_SPEED = 1.25;
 const ENEMY_SPEED_REMAINING_RATIO = 0.7;
 const computeInitialMazeZoom = () => {
   if (typeof window !== 'undefined') {
-    const isBig = window.innerWidth >= 768;
     const estWidth = window.innerWidth >= 1024
       ? Math.min(1920, window.innerWidth) - 380
       : window.innerWidth - 32;
-    const estHeight = Math.max(300, window.innerHeight - 160);
-    if (isBig) {
-      return {
-        zoomX: estWidth / MAZE_WORLD_SIZE,
-        zoomY: (estHeight / MAZE_WORLD_SIZE) * (1 / MAZE_VIEW_PERCENTAGE),
-      };
-    }
-    const mZoom = estWidth / MAZE_WORLD_SIZE;
-    return { zoomX: mZoom, zoomY: mZoom };
+    const zoom = estWidth / MAZE_WORLD_SIZE;
+    return { zoomX: zoom, zoomY: zoom };
   }
   return { zoomX: 1.33, zoomY: 1.33 };
 };
@@ -368,30 +360,16 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
     if (containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect();
       if (rect.width > 0 && rect.height > 0) {
-        if (rect.width >= 768) {
-          return {
-            zoomX: rect.width / MAZE_WORLD_SIZE,
-            zoomY: (rect.height / MAZE_WORLD_SIZE) * (1 / MAZE_VIEW_PERCENTAGE),
-          };
-        }
-        const mZoom = rect.width / MAZE_WORLD_SIZE;
-        return { zoomX: mZoom, zoomY: mZoom };
+        const zoom = rect.width / MAZE_WORLD_SIZE;
+        return { zoomX: zoom, zoomY: zoom };
       }
     }
     if (typeof window !== 'undefined') {
-      const isBig = window.innerWidth >= 768;
       const estWidth = window.innerWidth >= 1024
         ? Math.min(1920, window.innerWidth) - 380
         : window.innerWidth - 32;
-      const estHeight = Math.max(300, window.innerHeight - 160);
-      if (isBig) {
-        return {
-          zoomX: estWidth / MAZE_WORLD_SIZE,
-          zoomY: (estHeight / MAZE_WORLD_SIZE) * (1 / MAZE_VIEW_PERCENTAGE),
-        };
-      }
-      const mZoom = estWidth / MAZE_WORLD_SIZE;
-      return { zoomX: mZoom, zoomY: mZoom };
+      const zoom = estWidth / MAZE_WORLD_SIZE;
+      return { zoomX: zoom, zoomY: zoom };
     }
     return { zoomX: 1.33, zoomY: 1.33 };
   };
