@@ -353,6 +353,35 @@ function App() {
     if (isSubmittingRef.current) return;
     isSubmittingRef.current = true;
 
+    // Ensure every question that was not solved is calculated as wrong too
+    const answeredQIds = new Set(finalAnswers.map((a: any) => a.questionId));
+    let answersToSend = [...finalAnswers];
+
+    if (apiQuestions && apiQuestions.length > 0) {
+      apiQuestions.forEach((q) => {
+        if (!answeredQIds.has(q.id)) {
+          answersToSend.push({
+            questionId: q.id,
+            selectedAnswer: q.distractors?.[0] || 'لم تتم الإجابة',
+            isCorrect: false,
+            timeTaken: 1,
+            pointsEarned: 0
+          });
+        }
+      });
+    } else if (answersToSend.length === 0) {
+      answersToSend = [{
+        questionId: 1,
+        selectedAnswer: 'لم تتم الإجابة',
+        isCorrect: false,
+        timeTaken: 1,
+        pointsEarned: 0
+      }];
+    }
+
+    answersRef.current = answersToSend;
+    setAnswersList(answersToSend);
+
     if (!sessionId || !sessionToken) {
       setView('victory');
       isSubmittingRef.current = false;
@@ -363,25 +392,6 @@ function App() {
 
     try {
       const baseUrl = import.meta.env.VITE_API_BASE_URL;
-
-      // The API requires at least 1 answer. If the player lost all lives to enemies
-      // before entering any room, record one wrong answer for the current question.
-      let answersToSend = finalAnswers;
-      if (answersToSend.length === 0) {
-        const currentQ = apiQuestions[currentQuestionIndex];
-        if (currentQ) {
-          const fallbackAnswer = {
-            questionId: currentQ.id,
-            selectedAnswer: currentQ.distractors?.[0] || 'لم تتم الإجابة',
-            isCorrect: false,
-            timeTaken: Math.max(1, Math.floor((Date.now() - questionStartTime) / 1000)),
-            pointsEarned: 0
-          };
-          answersToSend = [fallbackAnswer];
-          answersRef.current = answersToSend;
-          setAnswersList(answersToSend);
-        }
-      }
 
       if (answersToSend.length > 0) {
         await apiFetch(`${baseUrl}/api/v1/student/games/sessions/${sessionId}/submit-answers`, {
@@ -512,17 +522,24 @@ function App() {
         </div>
       )}
 
-      {view === 'victory' && (
-        <VictoryModal
-          score={score}
-          totalQuestions={apiQuestions.length || 11}
-          correctAnswers={answersList.length ? answersList.filter(a => a.isCorrect).length : 8}
-          wrongAnswers={answersList.length ? answersList.filter(a => !a.isCorrect).length : 3}
-          victoryData={victoryData || { score: 80, earnedCoins: 20 }}
-          onRestart={handleRetry}
-          onHome={handleExitSite}
-        />
-      )}
+      {view === 'victory' && (() => {
+        const totalQuestions = apiQuestions.length || answersList.length || 11;
+        const correctAnswers = answersList.filter((a) => a.isCorrect).length;
+        // All unsolved questions are calculated as wrong too
+        const wrongAnswers = Math.max(0, totalQuestions - correctAnswers);
+
+        return (
+          <VictoryModal
+            score={score}
+            totalQuestions={totalQuestions}
+            correctAnswers={correctAnswers}
+            wrongAnswers={wrongAnswers}
+            victoryData={victoryData || { score: Math.round((correctAnswers / totalQuestions) * 100), earnedCoins: correctAnswers }}
+            onRestart={handleRetry}
+            onHome={handleExitSite}
+          />
+        );
+      })()}
     </div>
   );
 }

@@ -54,6 +54,8 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
   // After celebration (or if skipped), show ResultsPanel
   const finalScore = victoryData?.score ?? score;
   const totalScore = totalQuestions * 10;
+  // Ensure any question that was not solved is also counted as wrong
+  const computedWrong = Math.max(wrongAnswers, totalQuestions - correctAnswers);
   // Coins come from the top-level `data.coins` of the session-complete response
   // (not from `data.reward.coins`). Fall back to local count only if unavailable.
   const coins = typeof victoryData?.coins === 'number' ? victoryData.coins : correctAnswers;
@@ -64,7 +66,7 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
         score={finalScore}
         totalScore={totalScore}
         correctAnswers={correctAnswers}
-        wrongAnswers={wrongAnswers}
+        wrongAnswers={computedWrong}
         coins={coins}
         totalQuestions={totalQuestions}
         onRetry={handleRestart}
