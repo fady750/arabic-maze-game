@@ -38,7 +38,7 @@ const WARP_PORTALS = [
 const CELL_SIZE = 32;
 const MAZE_TILES_COUNT = 19;
 const MAZE_WORLD_SIZE = MAZE_TILES_COUNT * CELL_SIZE; // 608px
-const MAZE_VIEW_PERCENTAGE = 0.75; // 75% zoom view
+const MAZE_VIEW_PERCENTAGE = 0.85; // 85% zoom view
 const PLAYER_MOVE_SPEED = 1.25;
 const ENEMY_SPEED_REMAINING_RATIO = 0.7;
 const computeInitialMazeZoom = () => {
@@ -46,10 +46,10 @@ const computeInitialMazeZoom = () => {
     const estWidth = window.innerWidth >= 1024
       ? Math.min(1920, window.innerWidth) - 380
       : window.innerWidth - 32;
-    const zoom = estWidth / MAZE_WORLD_SIZE;
+    const zoom = (estWidth / MAZE_WORLD_SIZE) * MAZE_VIEW_PERCENTAGE;
     return { zoomX: zoom, zoomY: zoom };
   }
-  return { zoomX: 1.33, zoomY: 1.33 };
+  return { zoomX: 1.33 * MAZE_VIEW_PERCENTAGE, zoomY: 1.33 * MAZE_VIEW_PERCENTAGE };
 };
 
 // Room Centers & Colors
@@ -360,7 +360,7 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
     if (containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect();
       if (rect.width > 0 && rect.height > 0) {
-        const zoom = rect.width / MAZE_WORLD_SIZE;
+        const zoom = (rect.width / MAZE_WORLD_SIZE) * MAZE_VIEW_PERCENTAGE;
         return { zoomX: zoom, zoomY: zoom };
       }
     }
@@ -368,10 +368,10 @@ export const MazeCanvas: React.FC<MazeCanvasProps> = ({
       const estWidth = window.innerWidth >= 1024
         ? Math.min(1920, window.innerWidth) - 380
         : window.innerWidth - 32;
-      const zoom = estWidth / MAZE_WORLD_SIZE;
+      const zoom = (estWidth / MAZE_WORLD_SIZE) * MAZE_VIEW_PERCENTAGE;
       return { zoomX: zoom, zoomY: zoom };
     }
-    return { zoomX: 1.33, zoomY: 1.33 };
+    return { zoomX: 1.33 * MAZE_VIEW_PERCENTAGE, zoomY: 1.33 * MAZE_VIEW_PERCENTAGE };
   };
 
   // Initialize monsters
